@@ -58,11 +58,10 @@ Assets/
 │           ├── PlayerLocomotion.cs # 移动/跳跃/物理检测
 │           ├── PlayerCombat.cs     # 战斗/连击模块
 │           └── PlayerThrust.cs     # 突刺模块
-├── Config/DATA/                # ScriptableObject 配置
-│   ├── PlayerCharacterData.cs  # 角色数据配置
-│   ├── PlayerControllerData.cs # 控制器参数配置
-│   └── PlayerInputData.cs      # 键位绑定配置
-└── UOSLauncherEncrypt/         # UOS 启动器加密（独立程序集）
+└── Config/DATA/                # ScriptableObject 配置
+    ├── PlayerCharacterData.cs  # 角色数据配置
+    ├── PlayerControllerData.cs # 控制器参数配置
+    └── PlayerInputData.cs      # 键位绑定配置
 ```
 
 ## 核心架构
