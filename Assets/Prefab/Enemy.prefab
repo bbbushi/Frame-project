@@ -224,6 +224,7 @@ GameObject:
   m_Component:
   - component: {fileID: 857485388449700025}
   - component: {fileID: 2920382320223837979}
+  - component: {fileID: 1195412210950031735}
   m_Layer: 12
   m_Name: DamageComponent
   m_TagString: Untagged
@@ -259,6 +260,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitRepel: {fileID: 11400000, guid: ee4ddbe2cff04044cb4574b9979bc522, type: 2}
+--- !u!114 &1195412210950031735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165240244238022025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8109d207b7535664ba814d2dd7915376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3361380584642038919
 GameObject:
   m_ObjectHideFlags: 0
@@ -345,6 +358,7 @@ MonoBehaviour:
   damageComponent: {fileID: 0}
   locomotionComponent: {fileID: 0}
   healthManageComponent: {fileID: 0}
+  actionIgnoreComponent: {fileID: 0}
   characterData: {fileID: 0}
   controllerData: {fileID: 0}
   faction: 1

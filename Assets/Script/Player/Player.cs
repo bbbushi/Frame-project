@@ -2,7 +2,7 @@ using UnityEngine;
 using Managers;
 using Config;
 using Components;
-namespace Frame_Player
+namespace PlayerSystem
 {
     /// <summary>
     /// 玩家宿主 — 组装所有领域模块并协调状态机。
@@ -34,6 +34,9 @@ namespace Frame_Player
         [SerializeField] private LayerMask enemyLayer;
         [SerializeField] private Vector2 alertBoxCenter;
         [SerializeField] private Vector2 alertBoxSize = Vector2.one;
+
+        /// <summary>强类型玩家控制器配置（Inspector 挂的是 EntityControllerConfig 时为 null）</summary>
+        public PlayerControllerData PlayerConfig => controllerData as PlayerControllerData;
 
         // ═══════════════════════════════════════════════════
         //  初始化
@@ -99,12 +102,7 @@ namespace Frame_Player
         
 
         /// <summary>忙碌协程（攻击硬直等）</summary>
-        public System.Collections.IEnumerator BusyFor(float seconds)
-        {
-            ModuleControlComponent.Combat.IsBusy = true;
-            yield return new WaitForSeconds(seconds);
-            ModuleControlComponent.Combat.IsBusy = false;
-        }
+        
         /// <summary>响应 TimeManager.LocalTimeScale 变更事件</summary>
         private void OnLocalTimeScaleChanged(float newScale, float ratio)
         {

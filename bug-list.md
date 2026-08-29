@@ -1,12 +1,12 @@
 # Bug 清单 — 待修复
 
 > 首次生成: 2026-08-06（代码审查发现 68 项，当时已修复 H1-H6、M4、M9）
-> 最近复核: 2026-08-18 — 逐一核对当前代码（含 ForceMove 位移重构、Entity 组件层重构后的变化），**所有路径与行号均已更新为当前值**
+> 最近复核: 2026-08-19 — 08-18 逐一核对当前代码；**08-19 状态机重构（motion/action 双 FSM）当日发现并修复 N3-N7，同时关闭 H7、L1、L4、L12**
 >
 > | 状态 | 数量 | 明细 |
 > |------|------|------|
-> | ❌ 仍存在 | **35** | High 10 · Medium 16 · Low 9 |
-> | ✅ 已修复 | 22 | 2026-08-06 前：H1-H6、M4、M9；2026-08-17 复核确认：C4、M6、M12、M14、L13；2026-08-17 修复：C1-C3、C5-C15、H9（随 C9）；2026-08-18 复核确认：M22、L6、N1 |
+> | ❌ 仍存在 | **31** | High 9 · Medium 16 · Low 6 |
+> | ✅ 已修复 | 31 | 2026-08-06 前：H1-H6、M4、M9；2026-08-17 复核确认：C4、M6、M12、M14、L13；2026-08-17 修复：C1-C3、C5-C15、H9（随 C9）；2026-08-18 复核确认：M22、L6、N1；2026-08-19 修复：H7、L1、L4、L12、N3-N7（随状态机重构）|
 > | 💀 随重构消失 | 3 | L3、L5、H11 |
 > | 🆕 新发现 | 1 | N2 |
 
@@ -20,11 +20,10 @@ C1-C3、C5-C12 见下方修复记录；C13-C15 经查证为官方包 `cn.unity.u
 
 ---
 
-## 🟠 HIGH — 仍存在 10
+## 🟠 HIGH — 仍存在 9
 
 | # | 文件 | 行号 | 描述 |
 |---|------|------|------|
-| H7 | `Assets/Script/Component/PlayerAnimatorComponent.cs` | 41 | ❌ lambda 订阅 `healthManageComponent.OnDied` 无对应退订 → 内存泄漏（全库无 `-=` 取消；订阅对象已随重构从 Health 模块改为 Entity 层 healthManageComponent）|
 | H8 | `Assets/Script/Time/Timer.cs` | 82 | ❌ `Destroy()` 仅置标志位，`TimerTimeOut/TimerTick` 委托未置空（备注：`needToDestroy` 标志已随 C9 修复被 `DriveTimers` 消费，仅剩委托未置空问题）|
 | H10 | `Assets/Script/pool/ObjectPoolManager.cs` | 30、172 | ❌ `_spawnedToType` 映射仅在回收路径移除；已生成对象被外部 `Destroy`（含 Release 回退分支 172 行）后条目永久残留 |
 | H12 | `Assets/Faction.cs` | 24-33 | 🔀（已文档化）`friendly.Hostile(player)` 落到兜底 `return true`，与 `GetHostileFaction(friendly)==enemy` 矛盾；方法注释已明确声明"不可用于判断 friendly 与 all"，兜底行为本身未改 |
@@ -60,23 +59,30 @@ C1-C3、C5-C12 见下方修复记录；C13-C15 经查证为官方包 `cn.unity.u
 
 ---
 
-## 🔵 LOW — 仍存在 9（另 2 已修复、2 消失）
+## 🔵 LOW — 仍存在 6（另 5 已修复、2 消失）
 
 | # | 文件 | 行号 | 描述 |
 |---|------|------|------|
-| L1 | `Assets/Script/Player/PLAYERSTATE/PlayerDeathState.cs` | 37-45 | ❌ `stateTimer` 被 base.Enter() 重置为 0 后无人设正值，递减分支永不可达（死代码，延迟实际由协程承担）|
-| L2 | `Assets/Script/Config/PlayerControllerData.cs` | 11 | ❌ `jumpforce` 命名应为 `jumpForce`（PlayerLocomotion.cs:33 仍在消费）|
-| L4 | `Assets/Script/Player/PLAYERSTATE/PlayerIdleState.cs` | 16 | ❌ `Debug.Log` 遗留在生产代码 |
+| L2 | `Assets/Script/Config/PlayerControllerData.cs` | 11 | ❌ `jumpforce` 命名应为 `jumpForce`（PlayerLocomotion.cs 仍在消费）|
 | L7 | `Assets/Script/Config/PlayerInputData.cs` | 29 | ❌ CreateAssetMenu 路径 `"Data/..."` vs 其他配置均用 `"Game/..."` |
 | L8 | `Assets/Script/InputComponent/PlayerAction.cs` | 6-17 | ❌ 枚举无显式数值，经 ActionBinding 序列化进 .asset，插值重排会错位 |
 | L9 | `Assets/Script/InputComponent/PlayerAction.cs` | 6-17 | ❌ 无 None/Invalid 哨兵值，0 号位被 MoveLeft 占用 |
 | L10 | `Assets/Script/InputComponent/InputManager.cs` | 96 | ❌ `Enum.GetValues` 位于每帧调用的 ResetFrameStates()，装箱产生 GC |
 | L11 | `Assets/Script/InputComponent/InputManager.cs` | 21 | ❌ `Dependencies => new()` 每次访问新建 List |
-| L12 | `Assets/Script/Player/PLAYERSTATE/PlayerState.cs` | 51-52 | ❌ `stateTimer` 递减用 `Time.deltaTime` 而非缩放后帧间隔 |
 
 ---
 
 ## 🆕 新发现
+
+### 2026-08-19 — 状态机专项审查（N3-N7 当日随重构修复）
+
+| # | 文件 | 级别 | 描述 | 处置 |
+|---|------|------|------|------|
+| N3 | `Assets/Script/InputComponent/Commands/JumpCommand.cs` | 🔴 CRITICAL | `CanJump()` 以方法形式调用属性 → CS1955 编译错误，项目无法编译 | ✅ 当日修复（改属性访问）|
+| N4 | `Assets/Script/Player/PLAYERSTATE/PlayerAirState.cs` | 🔴 CRITICAL | 落地退出被 `AnimEndTrigger` 门控，但下落播放链（jumpup/jumping/jumpDown）均无 AnimEnd 事件，且控制器 "Landing" trigger 无代码设置 → **每次跳跃落地后 FSM 永久卡死在 AirState**（跳跃不重置、跑动动画不恢复，仅突刺可解锁）| ✅ 随重构消失（落地改物理判定 + `SetTrigger("Landing")`，动画过渡归还 Animator）|
+| N5 | `Assets/Script/Player/PLAYERSTATE/PlayerState.cs` | 🟠 HIGH | 每次 `Enter()` `new Timer(0.1f)` 自动注册进 `TimeManager.Timers` 且永不销毁（非 disposable）→ 状态切换无限泄漏，DriveTimers 每帧全量遍历 | ✅ 当日修复（stateTimer 改纯 float）|
+| N6 | `Assets/Script/Modules/PlayerBulletTime.cs` | 🟠 HIGH | `ExecutionState.Enter → BeginExecution → ExecuteChain` 同步段调 `StartThrust` 嵌套切状态到 ThrustState，Execution 在自身 Enter 中被切掉；链间隔≈Dash 冷却，第二跳起突刺被 `AddIgnore(Dash)` 静默吞掉 | ✅ 当日修复（ExecuteChain 复用 `ThrustCore()` + 手动 Thrust bool，状态机全程持有 Execution）|
+| N7 | `Assets/anim/shina/shina.controller` | 🟡 MEDIUM | C# FSM 与 Animator 资产脱节：无任何状态消费 `Execution`/`Death` bool（死亡无死亡动画）；attack2/3/4 不可达（连击被注释）；"Landing" trigger 为死参数（现已接通）| 🔀 部分处置（Landing 已接通；Execution/Death 动画状态与连击资产补齐列为后续美术/资产任务）|
 
 ### 2026-08-18
 
@@ -111,6 +117,10 @@ C1-C3、C5-C12 见下方修复记录；C13-C15 经查证为官方包 `cn.unity.u
 | 2026-08-17 复核确认 | M12 | PlayerControllerData 废弃字段已随重构清除，现存字段均被消费 |
 | 2026-08-17 复核确认 | M14 | SFXManager Acquire/Release 池计数逻辑已修正 |
 | 2026-08-17 复核确认 | L13 | BloodParticle `existTime` 默认 0.75f + 索引 Clamp 保护 |
+| 2026-08-19 | N3-N6 | 状态机重构为 motion/action 双正交 FSM（`PlayerStateMachine<TId>` + Request + 守卫表）：N3 属性访问修正；N4 随 TranState 体系删除而消失（落地物理判定 + Landing trigger）；N5 stateTimer 改 float；N6 ExecuteChain 复用 ThrustCore 不切状态 |
+| 2026-08-19 | H7 | `PlayerAnimatorComponent` OnDied 改具名方法 `HandleOnDied` 订阅 + `OnDestroy` 退订 |
+| 2026-08-19 | L1 / L12 | `PlayerState.stateTimer` 由 Timer 改 float，双重扣减与 deltaTime 缩放问题一并消除（DeathState 逻辑等价迁移）|
+| 2026-08-19 | L4 | `PlayerIdleState` 的 `Debug.Log` 移除（`PlayerThrust.StartThrust` 的遗留 Debug.Log 一并清理）|
 | 2026-08-18 复核确认 | M22 | `Damage.damage` 已为 float，`PlayerBulletTime.cs:230` 直接传 `Thrust.ThrustDamage`（float），无 `(int)` 截断 |
 | 2026-08-18 复核确认 | N1 / L6 | `LocomotionComponent.Velocity` 默认值已改 `1f`（LocomationComponent.cs:12）— Component 层移动恒为 0 的故障消除；隐式倍率设计保留（`ApplyJump` 等仍在消费）|
 

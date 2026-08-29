@@ -3,7 +3,8 @@ using System.Collections;
 using UnityEngine;
 using Config;
 using ActComponents;
-namespace Modules_Player
+using PlayerSystem;
+namespace Modules
 {
     /// <summary>
     /// 突刺模块 — 短距离突刺位移 + 伤害。
@@ -17,9 +18,9 @@ namespace Modules_Player
         [SerializeField] private float thrustDamage = 15f;
 
         public bool IsThrusting { get; private set; }
-        public float CooldownTimer { get; private set; }
         public float ThrustDamage => thrustDamage;
-        public bool CanThrust => CooldownTimer <= 0f && !IsThrusting && !player.locomotionComponent.IsTouchingWall && !player.ModuleControlComponent.Combat.IsBusy;
+        // 冷却通过 AddIgnore(Dash, thrustCooldown) 实现：冷却期内 CanThrust 为 false
+        public bool CanThrust => !Owner.actionIgnoreComponent.IsIgnore(ActionIgnoreTag.Dash);
 
         /// <summary>加载突刺配置</summary>
         public void LoadConfig(PlayerControllerData cfg)
@@ -31,44 +32,37 @@ namespace Modules_Player
         }
 
 
-        /// <summary>启动突刺</summary>
+        /// <summary>
+        /// 命令入口：冷却检查 → 请求动作层进入 Thrust 状态 → 占用冷却。
+        /// 切状态成功才占冷却，避免守卫拒绝时白白吞掉一次突刺。
+        /// </summary>
         public void StartThrust()
         {
+            if (!CanThrust) return;
+            if (Players.AnimatorComponent.ActionMachine.ChangeState(ActionStateId.Thrust))
+                Players.actionIgnoreComponent.AddIgnore(thrustCooldown, ActionIgnoreTag.Dash);
+        }
+
+        /// <summary>
+        /// 突刺核心：ForceMove 位移 + 重力归零协程。不切状态、不占冷却 —— 处决链（ExecuteChain）直接复用。
+        /// </summary>
+        public void ThrustCore()
+        {
+            if (IsThrusting) return;
             IsThrusting = true;
-            CooldownTimer = thrustCooldown;
-
-            float dir = player.locomotionComponent.FacingDirection;
-            player.locomotionComponent.ForceMove(thrustForce);
-            Debug.Log($"Thrust started. Direction: {dir}, Velocity: {player.rb.velocity}");
-            player.StartCoroutine(ThrustRoutine(thrustForce));
-
-            // TODO: 伤害检测 — 对前方敌人造成 thrustDamage 伤害
-            // float dist = 1.5f;
-            // var hit = Physics2D.OverlapCircle(
-            //     (Vector2)player.transform.position + new Vector2(dir * dist, 0f),
-            //     0.6f, player.enemyLayer);
-            // if (hit != null && hit.TryGetComponent<IDamageable>(out var target))
-            //     target.TakeDamage(thrustDamage);
+            Players.locomotionComponent.ForceMove(thrustForce);
+            Players.StartCoroutine(ThrustRoutine(thrustForce));
         }
 
         private IEnumerator ThrustRoutine(Displacement thurstForce)
         {
-            float originalGravity = player.rb.gravityScale;
-            player.rb.gravityScale = 0f;
+            float originalGravity = Players.rb.gravityScale;
+            Players.rb.gravityScale = 0f;
 
             yield return new WaitForSeconds(thurstForce.length);
 
-            player.rb.gravityScale = originalGravity;
+            Players.rb.gravityScale = originalGravity;
             IsThrusting = false;
-        }
-
-        /// <summary>每帧更新冷却计时器</summary>
-        public void UpdateCooldown(float deltaTime)
-        {
-            if (CooldownTimer > 0f)
-                CooldownTimer -= deltaTime;
-            if (CooldownTimer < 0f)
-                CooldownTimer = 0f;
         }
     }
 }

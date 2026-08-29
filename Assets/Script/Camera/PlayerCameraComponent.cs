@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
-using Frame_Player;
+using PlayerSystem;
 namespace Components
 {
     public class PlayerCameraComponent : PlayerComponent

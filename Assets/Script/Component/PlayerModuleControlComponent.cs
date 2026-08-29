@@ -1,5 +1,5 @@
-using Frame_Player;
-using Modules_Player;
+using PlayerSystem;
+using Modules;
 using UnityEngine;
 using Config;
 namespace Components
@@ -35,7 +35,7 @@ namespace Components
         }
         public override void RefreshUpdate()
         {
-            Thrust.UpdateCooldown(Time.deltaTime);
+            
         }
     }
 }

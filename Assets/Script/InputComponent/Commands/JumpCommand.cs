@@ -1,4 +1,4 @@
-using Frame_Player;
+using PlayerSystem;
 namespace Commands
 {
     public class JumpCommand : IPlayerCommand
@@ -6,13 +6,13 @@ namespace Commands
         public bool CanExecute(Player player)
         {
             if (player == null) return false;
-            return player.ModuleControlComponent.Locomotion.RemainingJumps > 0 && !player.ModuleControlComponent.Combat.IsBusy;
+            return player.ModuleControlComponent.Locomotion.CanJump;
             
         }
 
         public void Execute(Player player)
         {
-            player.AnimatorComponent.StateMachine.ChangeState(player.AnimatorComponent.JumpState);
+            
             player.ModuleControlComponent.Locomotion.ApplyJump();
         }
     }

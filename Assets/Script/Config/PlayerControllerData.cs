@@ -13,7 +13,12 @@ namespace Config
         public Displacement thrustForce; // 受击位移力度
         public float thrustDamage;    // 突刺伤害
         public float thrustCooldown;  // 突刺冷却
-        
+
+        [Header("攻击/死亡")]
+        public float attackIgnoreDuration = 0.3f;  // 攻击期间动作忽略（All）时长
+        public float attackRecovery = 0.2f;        // 攻击收招后的额外硬直
+        public float deathAnimationDuration = 1.5f; // 死亡到场景重载的延迟
+
 
         [Header("子弹时间")]
         public float bulletTimeScale = 0.2f;         // 子弹时间缩放比例

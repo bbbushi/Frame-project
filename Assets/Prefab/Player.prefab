@@ -61,6 +61,7 @@ MonoBehaviour:
   damageComponent: {fileID: 0}
   locomotionComponent: {fileID: 0}
   healthManageComponent: {fileID: 0}
+  actionIgnoreComponent: {fileID: 0}
   characterData: {fileID: 11400000, guid: 497c6b7bbe3e9f848a3485114dd0bd4d, type: 2}
   controllerData: {fileID: 11400000, guid: c12fba1e3f0c90c4487b23bf6b025121, type: 2}
   faction: 0
@@ -90,7 +91,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 2.98
+  m_GravityScale: 0.93
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -647,6 +648,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f35177dc55aacd14eab319054fd444da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  crossFadeDuration: 0.12
 --- !u!1 &6021808807007567252
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,6 +866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2.07
+  deceleration: 40
 --- !u!1 &6619460374651672524
 GameObject:
   m_ObjectHideFlags: 0
@@ -987,6 +990,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3822560695218010444}
   - component: {fileID: 8732441441713320451}
+  - component: {fileID: 4979543240476419215}
   m_Layer: 17
   m_Name: DamageComponent
   m_TagString: Untagged
@@ -1022,3 +1026,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitRepel: {fileID: 11400000, guid: ee4ddbe2cff04044cb4574b9979bc522, type: 2}
+--- !u!114 &4979543240476419215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8967489408929301834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8109d207b7535664ba814d2dd7915376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

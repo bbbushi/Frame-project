@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Frame_Player;
+using PlayerSystem;
 using Config;
 using InputComponent;
 namespace Managers{

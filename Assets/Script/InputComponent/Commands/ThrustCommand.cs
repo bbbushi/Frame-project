@@ -1,4 +1,4 @@
-using Frame_Player;
+using PlayerSystem;
 namespace Commands
 {
     /// <summary>
@@ -15,7 +15,7 @@ namespace Commands
 
         public void Execute(Player player)
         {
-            player.AnimatorComponent.StateMachine.ChangeState(player.AnimatorComponent.ThrustState);
+            player.ModuleControlComponent.Thrust.StartThrust();
         }
     }
 }

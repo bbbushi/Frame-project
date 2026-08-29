@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Collections;
 using Managers;
 using UnityEngine;
-using Frame_Player;
+using PlayerSystem;
 using Commands;
+using State_Player;
 namespace InputComponent
 {
     /// <summary>
@@ -99,7 +100,7 @@ namespace InputComponent
             // E 键 → 进入处决状态（统一走 InputManager）
             if (_input.IsPressed(PlayerAction.Execution) && bt.MarkCount > 0 && !bt.IsExecuting)
             {
-                _player.AnimatorComponent.StateMachine.ChangeState(_player.AnimatorComponent.ExecutionState);
+                _player.AnimatorComponent.ActionMachine.ChangeState(ActionStateId.Execution);
                 return;
             }
 

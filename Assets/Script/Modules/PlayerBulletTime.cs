@@ -6,7 +6,7 @@ using Managers;
 using Config;
 using enemy;
 using ActComponents;
-namespace Modules_Player
+namespace Modules
 {
     /// <summary>
     /// 子弹时间模块 — 瞄准、标记敌人、链式突刺执行。
@@ -80,7 +80,7 @@ namespace Modules_Player
             DestroyAimArc();
             IsActive = false;
             TimeManager.SetSlowScaleSmooth(1f, 0.3f);
-            player.StartCoroutine(ExecuteChain());
+            Players.StartCoroutine(ExecuteChain());
         }
 
         private void ExitBulletTimeInternal()
@@ -95,7 +95,7 @@ namespace Modules_Player
         private void CreateAimArc()
         {
             var arcObj = new GameObject("AimArc");
-            arcObj.transform.SetParent(player.transform);
+            arcObj.transform.SetParent(Players.transform);
             arcObj.transform.localPosition = Vector3.zero;
             arcObj.transform.localRotation = Quaternion.identity;
 
@@ -150,14 +150,14 @@ namespace Modules_Player
             if (!CanMarkMore) return false;
             if (MarkedTargets.Contains(enemy)) return false;
 
-            Vector2 playerPos = player.transform.position;
+            Vector2 playerPos = Players.transform.position;
             Vector2 toEnemy = (Vector2)enemy.position - playerPos;
 
             // 距离检测
             if (toEnemy.magnitude > markRange) return false;
 
             // 扇形角度检测：相对于玩家朝向的世界方向
-            float playerFacingAngle = player.locomotionComponent.FacingDirection > 0 ? 0f : 180f;
+            float playerFacingAngle = Players.locomotionComponent.FacingDirection > 0 ? 0f : 180f;
             float worldAim = playerFacingAngle + AimAngle;
             Vector2 aimWorldDir = new Vector2(Mathf.Cos(worldAim * Mathf.Deg2Rad), Mathf.Sin(worldAim * Mathf.Deg2Rad));
             float angleToEnemy = Vector2.Angle(aimWorldDir, toEnemy.normalized);
@@ -168,7 +168,7 @@ namespace Modules_Player
             var lineHits = Physics2D.RaycastAll(playerPos, toEnemy.normalized, toEnemy.magnitude);
             foreach (var h in lineHits)
             {
-                if (h.collider.transform == player.transform) continue;
+                if (h.collider.transform == Players.transform) continue;
                 if (h.collider.transform != enemy)
                     return false;
             }
@@ -214,30 +214,35 @@ namespace Modules_Player
 
                 // 水平方向：目标在玩家左侧还是右侧
                 Vector2 targetPos = target.position;
-                Vector2 dir = targetPos.x > player.transform.position.x ? Vector2.right : Vector2.left;
+                Vector2 dir = targetPos.x > Players.transform.position.x ? Vector2.right : Vector2.left;
 
                 // 瞬移到目标前方（同高度，水平偏移）
-                player.transform.position = new Vector2(targetPos.x - dir.x * approachDistance, targetPos.y);
+                Players.transform.position = new Vector2(targetPos.x - dir.x * approachDistance, targetPos.y);
 
                 // 朝向目标
-                if (dir.x * player.locomotionComponent.FacingDirection < 0f)
-                    player.locomotionComponent.Flip();
+                if (dir.x * Players.locomotionComponent.FacingDirection < 0f)
+                    Players.locomotionComponent.Flip();
 
-                // 水平贯穿突刺：锁定状态机 + 贯穿速度
-                player.ModuleControlComponent.Thrust.StartThrust();
+                // 水平贯穿突刺：直接复用突刺核心（不切状态、不占冷却），
+                // Execution 状态由状态机全程持有，突刺动画直接 CrossFade 到 Dash 维持视觉
+                Players.ModuleControlComponent.Thrust.ThrustCore();
+                if (Players.anim != null)
+                    Players.anim.CrossFade("Dash", Players.AnimatorComponent.CrossFadeDuration);
 
                 // 伤害
-                target.GetComponent<Enemy>()?.Hit(new Damage(player.ModuleControlComponent.Thrust.ThrustDamage, player, DamageType.Melee ,ImpactType.Light));
+                target.GetComponent<Enemy>()?.Hit(new Damage(Players.ModuleControlComponent.Thrust.ThrustDamage, Players, DamageType.Melee ,ImpactType.Light));
 
                 // 突刺期间每隔 interval 生成残影
                 float elapsed = 0f;
                 float shadowInterval = 0.03f;
-                while (elapsed < player.ModuleControlComponent.Thrust.thrustForce.length)
+                while (elapsed < Players.ModuleControlComponent.Thrust.thrustForce.length)
                 {
-                    ShadowPool.Instance?.GetShadow(player.transform);
+                    ShadowPool.Instance?.GetShadow(Players.transform);
                     elapsed += shadowInterval;
                     yield return new WaitForSeconds(shadowInterval);
                 }
+                // 姿态交还不在此处理：链结束 IsExecuting=false → ExecutionState 回 None，
+                // None.Enter 按移动层当前状态 CrossFade 回 GroundMove/Jumping
                 // 链间延迟
                 yield return new WaitForSeconds(chainDelay);
 

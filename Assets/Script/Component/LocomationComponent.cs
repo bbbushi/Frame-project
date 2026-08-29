@@ -1,6 +1,6 @@
 using UnityEngine;
 using ActComponents;
-using Frame_Player;
+using PlayerSystem;
 using Config;
 namespace Components
 {
@@ -8,6 +8,8 @@ namespace Components
     {
         [Header("移动参数")]
         [SerializeField] protected float moveSpeed;
+        // 掉头刹车率（m/s²）：反向输入时速度渐变过零的减速率；0 = 瞬时掉头
+        [SerializeField] protected float deceleration = 40f;
 
         public float Velocity {get; set;} = 1f;
         protected Displacement currentDisplacement;
@@ -33,9 +35,21 @@ namespace Components
         {
             if (cfg == null) return;
             moveSpeed = cfg.moveSpeed;
+            deceleration = cfg.deceleration;
         }
-        public virtual void ApplyHorizontal(float direction)        
-            => Owner.rb.velocity = new Vector2(direction * moveSpeed * Velocity, Owner.rb.velocity.y);
+        public virtual void ApplyHorizontal(float direction)
+        {
+            float vx = Owner.rb.velocity.x;
+            float target = direction * moveSpeed * Velocity;
+            // 掉头窗口：目标速度与当前速度反向 → 按 deceleration 渐变（刹车过零再渐变到反向），不瞬间掉头；
+            // 翻转时机由上层按速度归零触发（PlayerLocomotion.SetMoveInput）
+            if (direction != 0f && direction * vx < 0f && deceleration > 0f)
+                vx = Mathf.MoveTowards(vx, target, deceleration * FrameInterval);
+            else
+                vx = target;
+            Owner.rb.velocity = new Vector2(vx, Owner.rb.velocity.y);
+        }
+        
         
         public virtual void Stop()
             => Owner.rb.velocity = new Vector2(0f, Owner.rb.velocity.y);
@@ -111,8 +125,10 @@ namespace Components
         /// <summary>直接设置朝向（±1）并同步翻转视觉；仅设置 FacingDirection 属性不会翻转模型</summary>
         public virtual void SetFacing(float direction)
         {
+            
             FacingDirection = direction >= 0f ? 1f : -1f;
             Owner.transform.localScale = new Vector3(FacingDirection, 1f, 1f);
+
         }
 
         public virtual void Flip()

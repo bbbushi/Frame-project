@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
 namespace ActComponents
 {
@@ -48,13 +45,14 @@ namespace ActComponents
     {
         public ActionIgnoreMask mask;
         public float timer;
+        
 
         public ActionIgnore(ActionIgnoreMask mask, float time)
         {
             this.mask = mask;
             timer = time;
+            
         }
-
         public string MaskToString
         {
             get

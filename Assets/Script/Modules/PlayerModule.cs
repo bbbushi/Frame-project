@@ -1,7 +1,7 @@
 using System;
-using Frame_Player;
+using PlayerSystem;
 using Modules;
-namespace Modules_Player
+namespace Modules
 {
     /// <summary>
     /// 玩家模块基类 — 提供对宿主 Player 的反向引用。
@@ -11,6 +11,7 @@ namespace Modules_Player
     public abstract class PlayerModule: EntityModule
     {
         /// <summary>宿主 Player 引用，由 Player.Awake() 通过 Bind() 注入</summary>
-        protected Player player => (Player) base.Owner;
+        protected Player Players => (Player) base.Owner;
+        
     }
 }

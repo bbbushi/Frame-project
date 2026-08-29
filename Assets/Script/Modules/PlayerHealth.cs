@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using Config;
-namespace Modules_Player
+namespace Modules
 {
     /// <summary>
     /// 血量模块 — 管理血量、受伤、治疗、死亡。

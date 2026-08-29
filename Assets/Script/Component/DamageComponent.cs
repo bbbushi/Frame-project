@@ -34,7 +34,7 @@ namespace Components
                     
                     //播放动画，设置动作忽略
                     
-                    Owner.AddIgnore(hitRepel.length, ActionIgnoreTag.All);
+                    Owner.actionIgnoreComponent.AddIgnore(hitRepel.length, ActionIgnoreTag.All);
                     if (BloodParticleGenerator.Instance != null)
                     {
                         tick = 0;

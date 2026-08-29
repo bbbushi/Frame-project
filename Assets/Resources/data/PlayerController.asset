@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: PlayerController
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  jumpforce: 3
+  deceleration: 40
+  jumpforce: 5.17
   attackForce: {fileID: 11400000, guid: 8698974ad7ccb8d488525774d930a0cf, type: 2}
   thrustForce: {fileID: 11400000, guid: bea6abf0a90cdaf4cb3157a19a762249, type: 2}
   thrustDamage: 1
   thrustCooldown: 1
+  attackIgnoreDuration: 0.3
+  attackRecovery: 0.2
+  deathAnimationDuration: 1.5
   bulletTimeScale: 0.2
   aimArcAngle: 120
   maxMarkTargets: 3

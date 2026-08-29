@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Managers;
 using Config;
@@ -21,6 +19,7 @@ public abstract class Entity : MonoBehaviour,iDamagable
         [HideInInspector] public DamageComponent damageComponent;
         [HideInInspector] public LocomotionComponent locomotionComponent;
         [HideInInspector] public HealthManageComponent healthManageComponent;
+        [HideInInspector] public ActionIgnoreComponent actionIgnoreComponent;
         public EntityCharacterConfig characterData;
         public EntityControllerConfig controllerData;
 
@@ -85,57 +84,6 @@ public abstract class Entity : MonoBehaviour,iDamagable
     public Vector2 HitboxCenter => ChestPosition;
 
     //————————位置相关————————
-
-
-    //————————动作忽略相关————————
-    [SerializeField] LinkedList<ActionIgnore> actionIgnores = new LinkedList<ActionIgnore>();
-
-    public void RefreshActionIgnore()
-    {
-        for (var node = actionIgnores.First; node != null;)
-        {
-            //动作忽略标签自减
-            node.Value.timer -= FixedFrameInterval;
-
-            //移除到期的忽略标签
-            if (node.Value.timer <= 0)
-            {
-                var next = node.Next;
-                actionIgnores.Remove(node);
-                if (node.Next == null) break;
-                node = next;
-            }
-            node = node.Next;
-        }
-    }
-    public bool IsIgnore(ActionIgnoreTag tag)
-    {
-        foreach (ActionIgnore ignore in actionIgnores)
-        {
-            if (ignore.mask.ContainTag(tag))
-                return true;
-        }
-        return false;
-    }
-    public void AddIgnore(float time, params ActionIgnoreTag[] actionIgnoreTags)
-    {
-        ActionIgnoreMask mask = ActionIgnoreMask.GetMask(actionIgnoreTags);
-        bool hasIgnore = false;
-        foreach (ActionIgnore ignore in actionIgnores)
-        {
-            if (ignore.mask == mask)
-            {
-                //时间选一个更长的
-                if (ignore.timer <= time)
-                    ignore.timer = time;
-                //不再生成新的Ignore
-                hasIgnore = true;
-            }
-        }
-        if (!hasIgnore)
-            actionIgnores.AddFirst(new ActionIgnore(mask, time));
-    }
-    //————————动作忽略相关————————
            
 
     protected virtual void Awake()
@@ -147,15 +95,17 @@ public abstract class Entity : MonoBehaviour,iDamagable
         damageComponent = GetComponentInChildren<DamageComponent>();
         locomotionComponent = GetComponentInChildren<LocomotionComponent>();
         healthManageComponent = GetComponentInChildren<HealthManageComponent>();
-        detection.Init();
-        damageComponent.Init();
-        locomotionComponent.Init();
-        healthManageComponent.Init();
+        actionIgnoreComponent = GetComponentInChildren<ActionIgnoreComponent>();
+        
     }
 
     protected virtual void Start()
     {
-        
+        detection.Init();
+        damageComponent.Init();
+        locomotionComponent.Init();
+        healthManageComponent.Init();
+        actionIgnoreComponent.Init();
     }
 
     protected virtual void Update()
@@ -181,6 +131,9 @@ public abstract class Entity : MonoBehaviour,iDamagable
         //刷新血液特效
         if (damageComponent != null)
             damageComponent.RefreshFixedUpdate();
+        //刷新动作忽略标签
+        if (actionIgnoreComponent != null)
+            actionIgnoreComponent.RefreshActionIgnore();
     }
     public virtual void Interrupt()
     {
@@ -190,7 +143,10 @@ public abstract class Entity : MonoBehaviour,iDamagable
             component.Interrupt();
         }
     }
-
+    public virtual void BusyFor(float seconds)
+    {
+        actionIgnoreComponent.AddIgnore(seconds, ActionIgnoreTag.All);
+    }
 
     public virtual bool HasLineOfSight(Entity target)
     {
