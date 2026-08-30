@@ -31,24 +31,28 @@ Assets/
 │   ├── PlayerController.asset     #   控制器参数（跳跃/突刺/子弹时间）
 │   ├── PlayerInputData.asset      #   键位绑定
 │   ├── SFXManagerConfig.asset     #   音效库 + 池参数
+│   ├── MusicManagerConfig.asset   #   BGM 曲目（Normal/Start/fight）+ 淡入淡出时长
 │   ├── HitBoxData.asset           #   碰撞箱参数
 │   └── Displacement/              #   位移曲线（攻击前冲/突刺/受击击退）
 └── Script/                        # 所有游戏代码，按领域分层
     ├── GameManager.cs             # 全局单例：Manager 生命周期调度（MOMS 容器）
+    ├── MusicManager.cs            # 背景音乐：双 AudioSource 交叉淡入淡出（MOMS Manager）
+    ├── FadeManager.cs             # 场景过渡：黑屏淡入淡出 + LoadSceneWithFade（MOMS Manager）
     ├── Singleton.cs               # 泛型 MonoBehaviour 单例基类
-    ├── Interface/                 # IManager / IUpdatable / IPoolable
+    ├── Interface/                 # IManager / IUpdatable / IPoolable / IEvent
     ├── Component/                 # Entity 组件层（挂 Entity 子物体）
     │   ├── EntityComponent.cs     #   组件基类（Owner/TimeScale/Init/Interrupt）
     │   ├── DetectionComponent.cs  #   物理 detection（地面/墙壁/平台穿透/攻击挂点）
     │   ├── LocomotionComponent.cs #   移动物理（位移/翻转/ForceMove 击退）
     │   ├── HealthManageComponent.cs # 血量（OnChanged/OnDied/OnRevived 事件）
     │   ├── DamageComponent.cs     #   受击反应（打断/击退/受击动画/血液粒子）
+    │   ├── ActionIgnoreComponent.cs # 动作忽略窗口（受击硬直等动作互斥计时）
     │   ├── PlayerModuleControlComponent.cs # Player 模块宿主
-    │   └── PlayerAnimatorComponent.cs      # 状态机宿主
-    ├── Player/                    # Player 组装根 + 状态机
-    │   ├── Player.cs              #   Player : Entity（组装根，Frame_Player 命名空间）
-    │   ├── PlayerStateMachine.cs  #   轻量 FSM（含 TranState 过渡机制）
-    │   └── PLAYERSTATE/           #   所有 PlayerState
+    │   └── PlayerAnimatorComponent.cs      # 状态机宿主（motion/action 双层互斥 FSM）
+    ├── Player/                    # Player 组装根 + 状态机（命名空间 PlayerSystem）
+    │   ├── Player.cs              #   Player : Entity（组装根）
+    │   ├── PlayerStateMachine.cs  #   泛型 FSM：守卫三层 API + Transitioned 联动事件
+    │   └── PLAYERSTATE/           #   状态基类 + motion/action 两层状态（State_Player）
     ├── Modules/                   # Player 领域模块（纯 C#，[Serializable]）
     │   ├── EntityModule.cs        #   模块基类（Owner/Bind）
     │   ├── PlayerModule.cs        #   玩家模块基类（player 强类型引用）
@@ -97,27 +101,30 @@ Assets/
 | `PlayerInputController` | 输入→命令映射；正常/子弹时间双模式 | `InputManager` |
 | `TimeManager` | 全局时间缩放（帧冻结/慢动作/暂停/调试），驱动全局 Timer 列表 | 无 |
 | `SFXManager` | 音效池化播放，脚步声表面映射 | 无 |
+| `MusicManager` | 背景音乐：`MusicType`{Normal/Start/fight}，双 AudioSource 交叉淡入淡出由 `OnUpdate` 驱动 | 无 |
+| `FadeManager` | 场景过渡：黑屏淡入淡出 + `LoadSceneWithFade(sceneName)` | 无 |
 
 另有三个独立 MonoBehaviour 单例（不经 MOMS）：`ObjectPoolManager`（敌人对象池）、`ShadowPool`（残影池）、`BloodParticleGenerator`（血液粒子）。
 
 ### 2. Entity 组件层（所有角色共用）
 
-`Entity`（[Assets/Entity.cs](Assets/Entity.cs)）是所有角色的抽象基类（Player、Enemy 均继承），实现 `iDamagable`。**`Awake()` 自动查找并初始化四个子组件** —— 任何 Entity 子类在子物体上挂组件即获得对应能力：
+`Entity`（[Assets/Entity.cs](Assets/Entity.cs)）是所有角色的抽象基类（Player、Enemy 均继承），实现 `iDamagable`。**`Awake()` 自动查找五个子组件，`Start()` 中调用各自 `Init()`** —— 任何 Entity 子类在子物体上挂组件即获得对应能力：
 
 | 组件 | 职责 |
 |---|---|
 | `DetectionComponent` | 地面/墙壁/平台穿透检测，攻击挂点（attackSocket）|
 | `LocomotionComponent` | 移动物理：`ApplyHorizontal`/`Flip`/`ForceMove`（Displacement 曲线驱动的强制位移，击退/前冲/突刺统一入口）|
 | `HealthManageComponent` | 血量：TakeDamage/Heal/Revive + C# 事件（OnChanged/OnDied/OnRevived）|
-| `DamageComponent` | 受击反应：打断 + 受击动画 + 沿冲击方向击退 + 动作忽略 + 血液粒子 |
+| `DamageComponent` | 受击反应：打断 + 受击动画 + 沿冲击方向击退 + 受击硬直 + 血液粒子 |
+| `ActionIgnoreComponent` | 动作忽略窗口：`AddIgnore`/`IsIgnore`，FixedUpdate 中自减计时（受击硬直等动作互斥）|
 
-Entity 还提供：阵营系统、无敌/格挡计时、动作忽略窗口（`AddIgnore`）、本地时间缩放（自动叠乘 `TimeManager.GlobalTimeScale`）、视线检测、`Interrupt()` 递归中断。
+Entity 还提供：阵营系统、无敌/格挡计时、全局动作互斥（`BusyFor`）、本地时间缩放（自动叠乘 `TimeManager.GlobalTimeScale`）、视线检测、`Interrupt()` 递归中断。
 
 **完整受击管线**：`Hitbox` 检测目标 → `iDamagable.Hit(Damage)` → `Entity.Hit()`（格挡/无敌前置检查）→ `DamageComponent.Hit()`（打断 + 击退 + 血液粒子）。
 
 ### 3. Player 领域模块层
 
-`Player`（命名空间 `Frame_Player`，注意是下划线）继承 `Entity`，是模块宿主和组装根（composition root）。五个 `[Serializable]` 纯 C# 模块由 `PlayerModuleControlComponent` 持有：
+`Player`（命名空间 `PlayerSystem`）继承 `Entity`，是模块宿主和组装根（composition root）。五个 `[Serializable]` 纯 C# 模块由 `PlayerModuleControlComponent` 持有：
 
 | 模块 | 职责 |
 |---|---|
@@ -129,14 +136,17 @@ Entity 还提供：阵营系统、无敌/格挡计时、动作忽略窗口（`Ad
 
 模块间通过 C# 事件通信（如 `healthManageComponent.OnDied → DeathState`），避免直接相互依赖。
 
-### 4. 状态机层
+### 4. 状态机层（motion / action 双层互斥 FSM）
 
-轻量级 FSM（`PlayerStateMachine`），无 MonoBehaviour 依赖：
+`PlayerStateMachine<TId>`（泛型、无 MonoBehaviour 依赖，motion/action 两层共用）。**任意时刻只有一台机持有实际状态**：
 
-- 继承链：`PlayerState` → `PlayerGroundState`（Idle/Move）和 `PlayerAirState`（Jump/Air）
-- 具体状态：Idle / Move / Jump / Air / Thrust / Attack / Execution / Death
-- **过渡状态机制**：`ChangeState(state, animName)` 重载可动态创建 `PlayerTranState`（播放过渡动画后自动进入目标状态）；每个状态还可配置 `SetEnterState`/`SetExitState` 进入/退出子状态链
-- Animator 用 bool 参数（Idle/Move/Jump/Thrust/Attack/Execution/Death）驱动状态表现；动画结束通过动画事件回调 `AnimEnd()`
+- **移动层** `MotionStateId { None, Ground, Air }` — 回答"人在哪"，由物理事实驱动（离地自动进 Air、落地回 Ground）；动作持锁期间整体让位进 None。Idle/Move 与跳跃剪辑无独立 C# 状态，由 Animator Blend Tree 按 xvelocity/yvelocity 连续混合
+- **动作层** `ActionStateId { None, Attack, Thrust, Execution, Death }` — 回答"人在干什么"；进入动作时移动层让位、动作完成回 None；Death 是终态（永不回 None，移动层永不恢复，天然闭合）
+- **互斥联动**：宿主 `PlayerAnimatorComponent` 订阅 `ActionMachine.Transitioned` 事件集中处理跨机事务——进动作 → 移动层让位进 None；动作回 None → 按物理事实恢复 Ground/Air
+- **守卫三层 API**（均为拒绝式，集中在 `PlayerAnimatorComponent.Init()` 声明）：`ForbidAllFrom`（终态，如 Death）/ `ForbidAllBetween`（动作状态互斥组）/ `Forbid`（单点例外）；转换进行中（Exit/Enter 内）拒绝并发请求
+- **动画三分法**：① Base 层姿态由状态 Enter 的 `CrossFade(animStateName)` 直控（Controller Base 层零转换、零 bool）；② 连续量走 Blend Tree（浮点每帧由宿主统一写入）；③ 瞬时涟漪（受击 Hit / 落地 Landing）走 FX 事件层 trigger。FSM 正确性不依赖任何动画剪辑事件
+
+完整原理、转换规则全表与调试指南见 [state-machine.md](state-machine.md)。
 
 **命令模式**：`PlayerInputController` 将输入映射为 `IPlayerCommand`（`CanExecute(Player)` → `Execute(Player)`），当前有 `JumpCommand`、`AttackCommand`、`ThrustCommand`。
 
@@ -156,6 +166,7 @@ ScriptableObject 配置资产（位于 `Assets/Resources/data/`），数据与�
 | `PlayerInputData` | 键位绑定列表（`List<ActionBinding>`）|
 | `HitBoxConfig` | 伤害类型/冲击力/相机抖动/帧冻结 |
 | `SFXManagerConfig` | 音效库 + AudioSource 池参数 + 脚步表面映射 |
+| `MusicManagerConfig` | BGM 曲目（Normal/Start/fight）+ 默认淡入淡出时长 |
 | `Displacement` | 强制位移曲线（maxSpeed + length + speedCurve）|
 
 ## 默认键位
@@ -182,7 +193,7 @@ ScriptableObject 配置资产（位于 `Assets/Resources/data/`），数据与�
 - **单例分三种**：MOMS `IManager`（`GameManager.Get<T>()`）、`Player.Instance`、`Singleton<T>`（对象池等）
 - **TimeManager 静态 API**：`TimeManager.SlowScale` / `FrameFreezeScale` 等，类似 `Time.timeScale`
 - **模块间通信**：优先 C# 事件（如 `OnDied`），避免模块直接相互依赖
-- **动画参数**：bool 参数控制状态，受击用 `SetTrigger("Hit")`，动画结束走动画事件回调
+- **动画接线**：状态 Enter 的 `CrossFade` 直控 Base 层姿态；连续量走 Blend Tree；受击/落地等瞬时涟漪走 FX 事件层 trigger（`SetTrigger("Hit")`/`"Landing"`）；动画结束走动画事件回调 `AnimEnd()`（仅表现推进，FSM 正确性不依赖动画事件）
 
 ## 扩展新能力
 
@@ -193,7 +204,7 @@ ScriptableObject 配置资产（位于 `Assets/Resources/data/`），数据与�
 3. 在 `Script/InputComponent/Commands/` 下创建新 `IPlayerCommand` 实现
 4. 在 `PlayerAction` 枚举中注册新动作
 5. 在 `PlayerModuleControlComponent` 中注册模块（`Bind()` + `LoadConfig()`）
-6. 在 `PlayerAnimatorComponent.Init()` 中创建状态实例
+6. 在状态机 Id 枚举中注册新值，并在 `PlayerAnimatorComponent.Init()` 中 `Register`（动作层新状态按需用 `Forbid` 声明互斥）
 7. 在 `PlayerInputController.BuildCommands()` 中注册命令映射
 8. 在 `PlayerControllerData` / `PlayerCharacterData` 中添加配置字段（按需）
 9. 在 `PlayerInputData` 中配置键位绑定
@@ -214,6 +225,7 @@ ScriptableObject 配置资产（位于 `Assets/Resources/data/`），数据与�
 ## 附加文档
 
 - [CLAUDE.md](CLAUDE.md) — 项目架构详细指南（面向 AI 编程助手，与代码同步维护）
+- [state-machine.md](state-machine.md) — 双层互斥状态机完整参考（原理、转换规则全表、调试与扩展）
 - [bug-list.md](bug-list.md) — 已知问题清单（按严重度分级，含行号与修复记录）
 - `.claude/skills/add-player-ability/` — Player 能力扩展技能（含代码模板与检查清单）
 
@@ -229,6 +241,8 @@ ScriptableObject 配置资产（位于 `Assets/Resources/data/`），数据与�
 - [x] 输入系统（可配置键位绑定 + 命令模式）
 - [x] 时间管理器（帧冻结/慢动作/暂停 + 全局 Timer）
 - [x] 音效管理（AudioSource 池化 + 脚步声表面映射）
+- [x] 背景音乐管理（双 AudioSource 交叉淡入淡出）
+- [x] 场景过渡（黑屏淡入淡出加载）
 - [x] 对象池（敌人 + 残影）
 - [ ] 攻击连击完整逻辑
 - [ ] 敌人 AI 系统

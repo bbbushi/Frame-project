@@ -67,7 +67,7 @@ stateDiagram-v2
 
 ## 3. 核心：`PlayerStateMachine<TId>`
 
-泛型 FSM（`TId : struct`，即枚举），两层共用，位于 [PlayerStateMachine.cs](Assets/Script/Player/PlayerStateMachine.cs)、命名空间 `Frame_Player`。
+泛型 FSM（`TId : struct`，即枚举），两层共用，位于 [PlayerStateMachine.cs](Assets/Script/Player/PlayerStateMachine.cs)、命名空间 `PlayerSystem`。
 
 ### 3.1 数据结构
 
