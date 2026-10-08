@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0067eddd030bd4c3fb8923107f4a8fa8, type: 3}
+  m_Name: Guide1
+  m_EditorClassIdentifier: 
+  guideId: guide_basics
+  autoStart: 1
+  steps:
+  - stepId: step_move
+    text: "\u6309 A/D \u79FB\u52A8"
+    targetKey: 
+    completeCondition:
+      rid: 1982070364981952516
+    timeoutSeconds: 0
+    timeoutAction: 0
+    nextStepId: 
+    onEnterCommands: []
+  - stepId: step_attack
+    text: "\u70B9\u51FB\u9F20\u6807\u5DE6\u952E\u653B\u51FB"
+    targetKey: 
+    completeCondition:
+      rid: 1982070364981952519
+    timeoutSeconds: 15
+    timeoutAction: 0
+    nextStepId: 
+    onEnterCommands: []
+  - stepId: step_done
+    text: "\u5E72\u5F97\u6F02\u4EAE\uFF01"
+    targetKey: 
+    completeCondition:
+      rid: 1982070364981952520
+    timeoutSeconds: 0
+    timeoutAction: 0
+    nextStepId: 
+    onEnterCommands: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1982070364981952516
+      type: {class: CompositeCondition, ns: Guide, asm: Assembly-CSharp}
+      data:
+        mode: 0
+        conditions:
+        - rid: 1982070364981952517
+        - rid: 1982070364981952518
+    - rid: 1982070364981952517
+      type: {class: PlayerActionCondition, ns: Managers.Guide, asm: Assembly-CSharp}
+      data:
+        action: 0
+        phase: 1
+    - rid: 1982070364981952518
+      type: {class: PlayerActionCondition, ns: Managers.Guide, asm: Assembly-CSharp}
+      data:
+        action: 1
+        phase: 1
+    - rid: 1982070364981952519
+      type: {class: PlayerActionCondition, ns: Managers.Guide, asm: Assembly-CSharp}
+      data:
+        action: 4
+        phase: 0
+    - rid: 1982070364981952520
+      type: {class: AutoCompleteCondition, ns: Guide, asm: Assembly-CSharp}
+      data:
+        duration: 1.5

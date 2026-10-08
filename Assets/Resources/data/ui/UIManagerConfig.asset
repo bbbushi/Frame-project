@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c34bfefe6cb14a0aa7729e91f890af7, type: 3}
+  m_Name: UIManagerConfig
+  m_EditorClassIdentifier: 
+  referenceResolution: {x: 1280, y: 720}
+  matchWidthOrHeight: 0.5
+  dontDestroyOnLoad: 1
+  panels:
+  - panelId: TestPanel
+    prefab: {fileID: 1604816610985966143, guid: 1c0a87281889d4dcb8c0bdda97029489, type: 3}
+    autoShow: 0
+  - panelId: HUD
+    prefab: {fileID: 917242860189190653, guid: da5c245067f7942c4a09ed6979e39983, type: 3}
+    autoShow: 1

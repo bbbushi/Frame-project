@@ -1,0 +1,2 @@
+# 禁止 git 改写任何文件的换行符——Unity 资产（场景/prefab/meta）对换行敏感，原样提交
+* -text

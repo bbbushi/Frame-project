@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using PlayerSystem;
 namespace Managers{
 
 /// <summary>
@@ -99,17 +99,17 @@ public class FadeManager : IManager
 
     // ====== 传送 ======
 
-    // public void Tele(Transform target, float delayBeforeFade = 0.2f, float fadeDuration = 0.5f)
-    // {
-    //     GameManager.Instance.StartCoroutine(Teleporter(target, delayBeforeFade, fadeDuration));
-    // }
+    public void Tele(Transform target, float delayBeforeFade = 0.2f, float fadeDuration = 0.5f)
+    {
+        GameManager.Instance.StartCoroutine(Teleporter(target, delayBeforeFade, fadeDuration));
+    }
 
-    // private IEnumerator Teleporter(Transform target, float delayBeforeFade, float fadeDuration)
-    // {
-    //     yield return GameManager.Instance.StartCoroutine(FadeIn(fadeDuration));
-    //     GameManager.Get<PlayerManager>().SetPlayerPosition(target.position);
-    //     yield return GameManager.Instance.StartCoroutine(FadeOut(fadeDuration));
-    // }
+    private IEnumerator Teleporter(Transform target, float delayBeforeFade, float fadeDuration)
+    {
+        yield return GameManager.Instance.StartCoroutine(FadeIn(fadeDuration));
+        //Player.Instance.SetPlayerPosition(target.position);
+        yield return GameManager.Instance.StartCoroutine(FadeOut(fadeDuration));
+    }
 
     public void GetLastLocation(Transform transform)
     {

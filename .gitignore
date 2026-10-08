@@ -1,14 +1,52 @@
-/.claude
-/.plastic
-/.vscode
-/Assembly-CSharp.csproj
-/CLAUDE.md
-/Frame project.sln
-/ignore.conf
-/Library
-/Logs
-/Packages
-/ProjectSettings
-/Temp
-/Unity.UOS.Encrypt.csproj
-/UserSettings
+# Unity 生成物（标准模板 + Plastic 专属）
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+MemoryCaptures/
+[Rr]ecordings/
+
+# IDE / 工程（由 Unity 重新生成，不入库）
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+.vs/
+.vscode/
+.idea/
+.gradle/
+ExportedObj/
+.consulo/
+
+# 资产商店工具与私有文件
+**/Assets/AssetStoreTools*
+**/Assets/Plugins/PlasticSCM*
+*.private
+*.private.meta
+
+# 打包产物
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# 崩溃与系统文件
+sysinfo.txt
+crashlytics-build.properties
+.DS_Store
+Thumbs.db
+Desktop.ini
+~UnityDirMonSyncFile~*
+
+# Plastic SCM 本地工作区元数据（版本管理仍归 Plastic，git 不管它）
+.plastic/

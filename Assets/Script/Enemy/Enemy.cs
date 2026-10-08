@@ -166,6 +166,16 @@ namespace enemy
             Flash();
             return base.Hit(damage);
         }
+        // 池化对象的事件订阅标准位：每次从池中取出（OnEnable）都重新订，回池（OnDisable）退订——
+        // 放 Start/Awake 的话，池化复用第二只起就收不到事件了
+        private void OnEnable()
+        {
+            if (healthManageComponent != null) healthManageComponent.OnDied += Die;
+        }
+        private void OnDisable()
+        {
+            if (healthManageComponent != null) healthManageComponent.OnDied -= Die;
+        }
     }
 }
 
