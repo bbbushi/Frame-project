@@ -13,7 +13,15 @@ public class ParallaxBackground : MonoBehaviour
     {
         canmara = GameObject.Find("Main Camera");
 
-        length = GetComponent<SpriteRenderer>().bounds.size.x;
+        // 背景-天气这类无 SpriteRenderer 的层（纯粒子/装饰）：视差对它无意义，停用组件而不是每帧刷异常
+        var sr = GetComponent<SpriteRenderer>();
+        if(sr == null)
+        {
+            Debug.LogWarning($"[视差] {gameObject.name} 缺 SpriteRenderer，视差已停用");
+            enabled = false;
+            return;
+        }
+        length = sr.bounds.size.x;
         xposition = transform.position.x; 
     }
     void Update()

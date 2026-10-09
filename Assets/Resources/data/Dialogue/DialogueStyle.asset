@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5a05bf0061f66643a63b80c2423d0d7, type: 3}
   m_Name: DialogueStyle
   m_EditorClassIdentifier: 
-  font: {fileID: 11400000, guid: d41e4db1cfd7e4d80a71e84b4cdf1c3c, type: 2}
+  font: {fileID: 11400000, guid: afcb03ab35eb748fca4da62700f06749, type: 2}
   backgroundSprite: {fileID: 0}
   panelSprite: {fileID: 0}
   nameSprite: {fileID: 0}
