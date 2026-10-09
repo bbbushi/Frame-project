@@ -81,8 +81,9 @@ namespace Modules
             if (input * Players.rb.velocity.x >= TurnVelocityTolerance)
             {
                 loco.Flip();
-                Players.anim?.SetTrigger("flip");
+                // Players.anim?.SetTrigger("flip");
             }
         }
     }
 }
+

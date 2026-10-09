@@ -91,7 +91,7 @@ namespace Managers.UI
             go.GetComponent<DamageNumber>()?.Init(text, color);  // 立刻初始化，避免 Start 延迟
 
         }
-   
+
     }
     
 }

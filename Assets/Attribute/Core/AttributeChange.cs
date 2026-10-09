@@ -3,7 +3,7 @@ namespace Attributes
     /// <summary>
     /// 变化原因：表现层据此分色/过滤（飘字只认 Damage/Heal）
     /// </summary>
-    public enum ChangeReason{Init, Damage, Heal, Revive, Debug, Set }
+    public enum ChangeReason{Init, Damage, Heal, Revive, Debug, Set, Effect}
     /// <summary>
     /// 变化上下文：谁改的、为什么改。二期升级为 GameplayEffectSpec 引用。
     /// </summary>

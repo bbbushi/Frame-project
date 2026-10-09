@@ -8,5 +8,6 @@ namespace Config
         // 这里可以添加一些通用的配置属性
         public float maxHealth;             // 最大生命值
         public float attackDamage;          // 平A伤害数值
+        public float defense; 
     }
 }

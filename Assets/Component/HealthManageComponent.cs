@@ -23,6 +23,8 @@ namespace Components
             _set.Define(AttributeType.MaxHealth, maxHP, min: 1f);
             _set.Define(AttributeType.Health, maxHP);
             _set.Define(AttributeType.AttackPower, cfg != null ? cfg.attackDamage : 1f);
+            _set.Define(AttributeType.Defense, cfg != null ? cfg.defense : 0f);
+
             // OnDied 推导：从结构化事件里识别「血量跌破 0」这一次性语义
             _set.Changed += e =>
             {
@@ -36,6 +38,8 @@ namespace Components
             => _set.Modify(AttributeType.Health, -amount, new ChangeContext(ChangeReason.Damage, source));
         public void ApplyHeal(float amount, Entity source)
             => _set.Modify(AttributeType.Health, amount, new ChangeContext(ChangeReason.Heal, source));
+        public bool ApplyEffect(GameplayEffect effect, Entity source)
+            => _set != null && _set.ApplyEffect(effect, new ChangeContext(ChangeReason.Effect, source));
 
         // ── 保留的读路径/语义糖（转发 Set；_set 为 null = Init 前访问，返回安全默认）──
         public void Revive()
@@ -48,6 +52,11 @@ namespace Components
         public float Ratio       => MaxHP > 0f ? CurrentHP / MaxHP : 0f;
         public float AttackPower => _set?.GetCurrentValue(AttributeType.AttackPower) ?? 0f;
         public bool  IsDead      => _set != null && _set.IsDead;
-        
+        public float Defense => _set?.GetCurrentValue(AttributeType.Defense) ?? 0f;
+
+        // dt 必须是帧间隔（FixedFrameInterval = fixedDeltaTime×LocalTimeScale）。
+        // 原来误传 TimeScale（=时间倍率，正常时恒为 1.0）→ 每次物理帧都推进 1 秒假时间，时钟快 ~50 倍，毒瞬间结算
+        public override void RefreshFixedUpdate() => _set?.TickEffects(FixedFrameInterval);
+
     }
 }

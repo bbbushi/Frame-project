@@ -1,7 +1,6 @@
 using UnityEngine;
 using ActComponents;
 using Effect;
-using Managers.UI;
 namespace Components
 {
     public class DamageComponent : EntityComponent
@@ -42,10 +41,14 @@ namespace Components
                     }
                     break;
             }
-            if(Owner.healthManageComponent != null) Owner.healthManageComponent.ApplyDamage(damage.damage, damage.origin);
+            // 减伤：平滑公式 dmg × K/(K+def)（def=50→67%，100→50%，300→25%，永远打不空）。
+            // 结算在战斗组件做（属性集保持纯数据），落地值经 ApplyDamage→delta→飘字自动显示减免后的数
+            const float K = 100f;
+            float def = Owner.healthManageComponent != null ? Owner.healthManageComponent.Defense : 0f;
+            float actual = damage.damage * K / (K + def);
+            if(Owner.healthManageComponent != null) Owner.healthManageComponent.ApplyDamage(actual, damage.origin);
             else Debug.LogWarning($"Entity {Owner.name} does not have a HealthManageComponent to process damage.");
-            // 飘字：受击侧统一出口。Blocked/Miss 在 Entity.Hit 就被分流，不会到这——天然只飘真实命中
-            FloatingTextManager.Show(damage.damage.ToString("0"), Owner.ChestPosition, Color.white);
+            // 飘字已迁至 FloatingTextManager（订阅 AttributeSet.AnyChanged 总线），本组件不碰表现层
             return new HitResult(damage.damage, HitResultType.Hit);
         }
 

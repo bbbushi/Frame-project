@@ -131,6 +131,9 @@ public abstract class Entity : MonoBehaviour,iDamagable
         //刷新血液特效
         if (damageComponent != null)
             damageComponent.RefreshFixedUpdate();
+        //刷新属性效果（Duration 到期回退、Period 周期跳——毒/铁壁的时钟全在这，不刷则挂载后永远不动）
+        if (healthManageComponent != null)
+            healthManageComponent.RefreshFixedUpdate();
         //刷新动作忽略标签
         if (actionIgnoreComponent != null)
             actionIgnoreComponent.RefreshActionIgnore();

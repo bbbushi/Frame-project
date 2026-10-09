@@ -3,10 +3,12 @@ using UnityEditor;
 using UnityEngine;
 using Managers.UI;
 using PlayerSystem;
+using Attributes;
 /// <summary>
 /// UI 调试菜单：
 /// - 打开/关闭 TestPanel、关闭全部面板（Play Mode 用）
 /// - 校验注册表（非 Play 可用：prefab 非空 / 挂 UIPanel / id 非空唯一 / 与组件 PanelId 一致）
+/// - 属性/效果调试：受伤、治疗、飘字、铁壁/中毒 GameplayEffect（Play Mode 用）
 /// </summary>
 public static class UIDebugMenu
 {
@@ -59,16 +61,46 @@ public static class UIDebugMenu
         if (bad == 0) Debug.Log($"[UI校验] 注册表 {config.panels.Count} 条，全部通过 ✓");
     }
 
-    [MenuItem("UI/调试/玩家受伤10点")]     // 验证 HUD：直调 TakeDamage——故意不走 DamageComponent，
+    [MenuItem("UI/调试/玩家受伤10点")]     // 直调属性宿主（绕过 DamageComponent 的击退/粒子等表现）。
     public static void HurtPlayer()
     {
-        if(EnsurePlaying()) Player.Instance?.healthManageComponent?.ApplyDamage(10f, null);   // 所以【不飘字】，这正是数据源分离的验证点
+        if(EnsurePlaying()) Player.Instance?.healthManageComponent?.ApplyDamage(10f, null);   // GAS 化后飘字走事件总线：这条也会飘字（数据/表现分离的验收点）
     }
        
     [MenuItem("UI/调试/玩家治疗回满")]     // 测死亡边界后拉回来反复测
     public static void HealPlayer()
     {
         if(EnsurePlaying()) Player.Instance?.healthManageComponent?.ApplyHeal(float.MaxValue, null);
+    }
+
+    [MenuItem("UI/调试/玩家复活（清效果+回满）")]   // 真·Revive：与治疗的区别=ClearEffects。毒没跳完就治疗会"回满又掉"，那是 Heal 语义不是 bug
+    public static void RevivePlayer()
+    {
+        if(!EnsurePlaying()) return;
+        var h = Player.Instance?.healthManageComponent;
+        if(h == null) { Debug.LogWarning("[UI] 场景里没有 Player"); return; }
+        h.Revive();
+        Debug.Log($"[UI] 已复活：HP {h.CurrentHP:0}/{h.MaxHP:0}，残留效果 {h.Set.ActiveEffects.Count} 条");
+    }
+
+    [MenuItem("UI/调试/铁壁（防+50 持续5秒）")]   // 挂上→受伤10 飘 7；等 5 秒过期→再受伤 飘 10（减伤闭环）
+    public static void ApplyIronWall()
+    {
+        if(!EnsurePlaying()) return;
+        var fx = Resources.Load<GameplayEffect>("data/effect/IronWall");
+        if(fx == null) { Debug.LogWarning("[UI] 缺 Resources/data/effect/IronWall.asset"); return; }
+        if(Player.Instance?.healthManageComponent?.ApplyEffect(fx, null) == true)
+            Debug.Log($"[UI] 已挂 {fx.name}（{fx.durationType}, 时长{fx.duration}s, 周期{fx.period}s, 持续修饰{fx.modifiers.Count}条, 周期修饰{fx.periodModifiers.Count}条）");
+    }
+
+    [MenuItem("UI/调试/中毒（每秒-5 持续3秒）")]  // 每秒血条 -5 且不飘字（Effect 不在飘字白名单）
+    public static void ApplyPoison()
+    {
+        if(!EnsurePlaying()) return;
+        var fx = Resources.Load<GameplayEffect>("data/effect/Poison");
+        if(fx == null) { Debug.LogWarning("[UI] 缺 Resources/data/effect/Poison.asset"); return; }
+        if(Player.Instance?.healthManageComponent?.ApplyEffect(fx, null) == true)
+            Debug.Log($"[UI] 已挂 {fx.name}（{fx.durationType}, 时长{fx.duration}s, 周期{fx.period}s, 持续修饰{fx.modifiers.Count}条, 周期修饰{fx.periodModifiers.Count}条）");
     }
         
     [MenuItem("UI/调试/测试飘字")]         // 不用打怪就能验证坐标链
@@ -80,7 +112,18 @@ public static class UIDebugMenu
             Debug.LogWarning("[UI] 场景里没有 Player");
             return;
         }
-        FloatingTextManager.Show("999", Player.Instance.ChestPosition, Color.yellow);
+        Debug.Log($"[UI] 测试飘字：在 Player.ChestPosition {Player.Instance.ChestPosition} 显示白色「999」（下一帧出字）");
+        // 菜单回调属于编辑器上下文——UGUI 对象在玩家循环外 Instantiate 会"活着但不渲染"
+        // （Awake/Update 照常跑，CanvasRenderer 却始终不出几何体，零警告零报错）。
+        // 必须延迟一帧让 Show 落回玩家循环执行。别把这层延迟当多余优化掉！
+        GameManager.Instance.StartCoroutine(ShowNextFrame());
+    }
+
+    private static System.Collections.IEnumerator ShowNextFrame()
+    {
+        yield return null;    // 等一帧，回到玩家循环
+        if(Player.Instance != null)
+            FloatingTextManager.Show("999", Player.Instance.ChestPosition, Color.white);
     }
     
 

@@ -5,10 +5,9 @@ namespace Managers.UI
     {
         private TMPro.TMP_Text _text;   // Awake 自取——和 TMP 同物体永远命中，省 Inspector 拖槽（漏拖即 NRE）
         private RectTransform _rect;
-        private const float Lifetime = 0.8f;     // 总寿命
-        private const float RiseSpeed = 60f;     // 上浮速度（参考分辨率 720 空间的像素/秒）
-        private const float FadeStart = 0.4f;    // 从寿命的哪个点开始淡出
-        // （const 编译期定死，序列化系统不认——Inspector 调参需求出现时改 [SerializeField] float 再说）
+        [SerializeField] private float lifetime = 2f;     // 总寿命（prefab 上没序列化这些字段时用代码默认值，Inspector 可调）
+        [SerializeField] private float riseSpeed = 60f;   // 上浮速度（参考分辨率 720 空间的像素/秒）
+        [SerializeField] private float fadeStart = 1.2f;  // 从寿命的哪个点开始淡出
         private float _age;
         private Color _baseColor;
 
@@ -37,10 +36,10 @@ namespace Managers.UI
         private void Update()
         {
             _age += Time.unscaledDeltaTime;
-            _rect.anchoredPosition += Vector2.up * (RiseSpeed * Time.unscaledDeltaTime); // 统一走 anchoredPosition，anchor 改了也不分叉
-            var a = _age < FadeStart ? 1f : Mathf.Lerp(1f, 0f, (_age - FadeStart) / (Lifetime - FadeStart)); // 线性淡出
+            _rect.anchoredPosition += Vector2.up * (riseSpeed * Time.unscaledDeltaTime); // 统一走 anchoredPosition，anchor 改了也不分叉
+            var a = _age < fadeStart ? 1f : Mathf.Lerp(1f, 0f, (_age - fadeStart) / Mathf.Max(0.01f, lifetime - fadeStart)); // 线性淡出
             _text.color = new Color(_baseColor.r, _baseColor.g, _baseColor.b, a);
-            if(_age >= Lifetime) Destroy(gameObject); // 寿命到，销毁自己，管理器不用管生命周期
+            if(_age >= lifetime) Destroy(gameObject); // 寿命到，销毁自己，管理器不用管生命周期
         }
     }
 }

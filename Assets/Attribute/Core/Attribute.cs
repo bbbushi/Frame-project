@@ -6,7 +6,8 @@ namespace Attributes
     {
         Health,
         MaxHealth,
-        AttackPower
+        AttackPower,
+        Defense
         // 其他属性类型...
     }
     /// <summary>
