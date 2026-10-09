@@ -91,7 +91,8 @@ namespace Attributes
         {
             float v = attr.Clamp(newCurrent);
             if(type == AttributeType.Health)
-                v = Mathf.Clamp(v, 0f, GetCurrentValue(AttributeType.MaxHealth));
+                // 下限用属性自身 Min（沙包 immortal 锁 1；普通怪 Min=0，行为不变）
+                v = Mathf.Clamp(v, attr.MinValue, GetCurrentValue(AttributeType.MaxHealth));
 
             // ① 值没变不发事件：满血再治疗无事件 → 天然不飘字
             if(Mathf.Approximately(v, attr.currentValue)) return false;

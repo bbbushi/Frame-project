@@ -21,7 +21,7 @@ namespace Components
             var cfg = Owner.characterData;
             float maxHP = cfg != null ? cfg.maxHealth : 100f;   // 无配置兜底=旧字段默认值
             _set.Define(AttributeType.MaxHealth, maxHP, min: 1f);
-            _set.Define(AttributeType.Health, maxHP);
+            _set.Define(AttributeType.Health, maxHP, min: cfg != null && cfg.immortal ? 1f : 0f);   // 沙包不倒翁：下限锁 1 → 永不触发 OnDied
             _set.Define(AttributeType.AttackPower, cfg != null ? cfg.attackDamage : 1f);
             _set.Define(AttributeType.Defense, cfg != null ? cfg.defense : 0f);
 
