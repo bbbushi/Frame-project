@@ -8,19 +8,17 @@ namespace Components
     {
         [SerializeField] public PlayerCombat Combat = new();
         [SerializeField] public PlayerThrust Thrust = new();
-        [SerializeField] public PlayerBulletTime BulletTime = new();
         [SerializeField] public PlayerLocomotion Locomotion = new();
         public override void Init()
         {
             base.Init();
             Bind();
-            LoadConfig(Owner.characterData as PlayerCharacterData, Owner.controllerData as PlayerControllerData);     
+            LoadConfig(Owner.characterData as PlayerCharacterData, Owner.controllerData as PlayerControllerData);
         }
         public void Bind()
         {
             Combat.Bind(Owner);
             Thrust.Bind(Owner);
-            BulletTime.Bind(Owner);
             Locomotion.Bind(Owner);
         }
         public void LoadConfig(PlayerCharacterData characterData, PlayerControllerData controllerData)
@@ -28,7 +26,6 @@ namespace Components
             Locomotion.LoadConfig(controllerData);
             Combat.LoadConfig(characterData, controllerData);
             Thrust.LoadConfig(controllerData);
-            BulletTime.LoadConfig(controllerData);
         }
         public override void RefreshUpdate()
         {

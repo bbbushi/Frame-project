@@ -19,12 +19,6 @@ namespace Config
         public float attackRecovery = 0.2f;        // 攻击收招后的额外硬直
         public float deathAnimationDuration = 1.5f; // 死亡到场景重载的延迟
 
-
-        [Header("子弹时间")]
-        public float bulletTimeScale = 0.2f;         // 子弹时间缩放比例
-        public float aimArcAngle = 120f;             // 瞄准扇形角度
-        public int maxMarkTargets = 3;               // 标记上限
-        public float markRange = 10f;                // 标记检测距离
-        public float chainDelay = 0.15f;             // 连杀间隔
+        // 子弹时间参数（bulletTimeScale/aimArc/maxMarkTargets/markRange/chainDelay）已随旧实现移除，重写时在此补回
     }
 }

@@ -11,8 +11,20 @@ namespace Components
         [SerializeField]private Collider2D platformSensor;
         public GameObject hitboxPrefab;
         [SerializeField]private Transform attackSocket;
+        public Transform GetAttackSocket() => attackSocket;
         public bool IsOnGround => GroundDetectionCollider != null && GroundDetectionCollider.IsTouchingLayers(LayerMask.GetMask("Ground"));
         public bool IsFacingWall => WallDetectionCollider != null && WallDetectionCollider.IsTouchingLayers(LayerMask.GetMask("Wall"));
+
+        /// <summary>悬崖前探：身前 distance 处的脚下还有没有地面（判「再走会掉」，IsOnGround 是「已经掉了」）。
+        /// 用向下射线而非 OverlapPoint 探点——胶囊底在地表 y-0.5，探点压在地表平面上永远 miss
+        /// （实测案：每帧掉头来回抽搐）。Ground/Platform 都算落脚面，巡逻不走下平台边缘</summary>
+        public bool IsGroundAhead(float distance = 0.5f)
+        {
+            float facing = Owner.locomotionComponent.FacingDirection;
+            Vector2 origin = (Vector2)Owner.transform.position + new Vector2(facing * distance, -0.2f);
+            return Physics2D.Raycast(origin, Vector2.down, 0.8f,
+                LayerMask.GetMask("Ground", "Platform")).collider != null;
+        }
         public bool isTouchingPlatform => platformSensor != null && platformSensor.IsTouchingLayers(LayerMask.GetMask("Platform"));
         public override void RefreshFixedUpdate()
         {
@@ -20,6 +32,9 @@ namespace Components
             RefreshPlatformPenetrate();
             
         }
+        /// <summary>
+        /// 是否可以穿透平台（Platform），用于跳跃时允许穿越平台，或者在强制穿越计时器内允许穿透所有平台
+        /// </summary>
         public bool CanPenetratePlatform
         {
             get
@@ -91,7 +106,7 @@ namespace Components
             }
         }
         #endif
-        public Transform GetAttackSocket() => attackSocket;
+        
         
     }    
 }

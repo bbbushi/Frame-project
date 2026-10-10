@@ -10,7 +10,7 @@ namespace PlayerSystem
     public enum MotionStateId { None,Ground, Air }
 
     /// <summary>动作层状态 — 回答"人在干什么"，持锁期间抑制移动层输入</summary>
-    public enum ActionStateId { None, Attack, Thrust, Execution, Death }
+    public enum ActionStateId { None, Attack, Thrust, Death }
 
     /// <summary>
     /// 玩家状态机 — 泛型 FSM，motion / action 两层共用。

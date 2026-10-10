@@ -13,7 +13,7 @@ namespace State_Player
     public abstract class PlayerState
     {
         protected readonly Player player;
-        // Base 层 Animator 状态名（BlendTree 状态名或离散状态名）；null = 该状态无对应动画（如 Execution/Death 暂缺剪辑）
+        // Base 层 Animator 状态名（BlendTree 状态名或离散状态名）；null = 该状态无对应动画（如 Death 暂缺剪辑）
         protected readonly string animStateName;
         // 进入状态时重置的计时器（纯 float，不走 Timer —— Timer 构造会注册进 TimeManager.Timers 且需显式销毁）
         protected float stateTimer;

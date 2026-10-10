@@ -87,9 +87,6 @@ public class InputManager : IManager, IUpdatable
             ReadKey(PlayerAction.Jump,       KeyCode.Space,  InputTriggerType.Down);
             ReadKey(PlayerAction.Thrust,     KeyCode.S,      InputTriggerType.Down);
             ReadKey(PlayerAction.Attack,     KeyCode.Mouse0, InputTriggerType.Down);
-            ReadKey(PlayerAction.BulletTime, KeyCode.Mouse1, InputTriggerType.Down);
-            ReadKey(PlayerAction.Execution,  KeyCode.E,      InputTriggerType.Down);
-            ReadKey(PlayerAction.Mark,       KeyCode.Mouse0, InputTriggerType.Down);
         }
 
         UpdateMoveInput();

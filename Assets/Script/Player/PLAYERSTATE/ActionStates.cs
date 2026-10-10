@@ -94,29 +94,6 @@ namespace State_Player
     }
 
     /// <summary>
-    /// 处决状态 — 链式突刺由 PlayerBulletTime.BeginExecution 协程驱动（内部复用 ThrustCore，不切状态），
-    /// 状态机全程持有 Execution；链结束后回 None。
-    /// </summary>
-    public class PlayerExecutionState : ActionState
-    {
-        public PlayerExecutionState(Player player, string animBoolName) : base(player, animBoolName) { }
-
-        public override void Enter()
-        {
-            base.Enter();
-            player.ModuleControlComponent.BulletTime.BeginExecution();
-        }
-
-        public override void Update()
-        {
-            base.Update();
-
-            if (!player.ModuleControlComponent.BulletTime.IsExecuting)
-                player.AnimatorComponent.ActionMachine.ChangeState(ActionStateId.None);
-        }
-    }
-
-    /// <summary>
     /// 死亡状态 — 终态（守卫表禁止转出）：停止移动、零重力，短延迟后重载场景。
     /// </summary>
     public class PlayerDeathState : ActionState
