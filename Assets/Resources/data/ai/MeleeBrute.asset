@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e1ae90815ef466cb7e347d9d425f212, type: 3}
   m_Name: MeleeBrute
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   rootState: 1
   visionRange: 6
   visionHeight: 3
@@ -30,4 +30,4 @@ MonoBehaviour:
     windup: 0.35
     cooldown: 1.2
     bulletPrefab: {fileID: 0}
-  debugLog: 0
+  debugLog: 1
