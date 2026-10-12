@@ -22,6 +22,8 @@ namespace Managers.UI
             set{ SetProperty(ref m_Spacing, value); } // 基类工具：值变了才 SetDirty
         }
         // ── 两段式之间的数据通道：水平段装箱，垂直段消费 ──
+
+        // m_Slots 存储每个子元素的槽位信息，包括 x、y、width、height
         // 每个子级一个槽位：x/y 是容器局部坐标（y 向上为正、首行 y=0 往下递减），width/height 为分配尺寸
         readonly List<Rect> m_Slots = new List<Rect>();
         float m_TotalHeight;    // 装箱结果总高（垂直段上报用）
@@ -55,8 +57,79 @@ namespace Managers.UI
         /// </summary>
         public override void CalculateLayoutInputVertical()
         {
-            float h = m_Slots.Count > 0 ? m_TotalHeight : m_TotalHeight + padding.vertical;
+            float h;
+            if (m_Slots.Count > 0)
+            {
+                h = m_TotalHeight;   // 水平段已装箱：行数定了，总高就是真实值
+            }
+            else
+            {
+                // 还没装箱过：保守按"单行"估——最高子级的高度 + 上下 padding
+                // （rectChildren 为空时循环零次，h = padding.vertical，空容器高度 = 纯 padding，也自洽）
+                float tallest = 0f;
+                for (int i = 0; i < rectChildren.Count; i++)
+                    tallest = Mathf.Max(tallest, LayoutUtility.GetPreferredHeight(rectChildren[i]));
+                h = tallest + padding.vertical;
+            }
             SetLayoutInputForAxis(h, h, 0f, 1);
         }
-    }
+        // ═══ 水平布置：装箱（真正的行结构在这算——rect.width 已是终值）═══
+        /// <summary>
+        /// 设置水平方向的布局，包括每个子元素的 x 坐标和宽度。
+        /// CalculateLayoutInputHorizontal()计算布局输入，该方法根据输入设置实际布局。
+        /// PackRows() 方法负责将子元素按行装箱数据，更新 m_Slots 和 m_TotalHeight。
+        /// 最终通过 SetChildAlongAxis() 方法将每个子元素的 x 坐标和宽度设置到布局中。
+        /// </summary>
+        public override void SetLayoutHorizontal()
+        {
+            m_Tracker.Clear();                          // 基类规则：一轮一清
+            Packrows();
+
+            for (int i = 0; i < rectChildren.Count; i++)
+                SetChildAlongAxis(rectChildren[i], 0, m_Slots[i].x + padding.left, m_Slots[i].width);
+        }
+        public override void SetLayoutVertical()
+        {
+            // pos 语义（LayoutGroup 源码注释原文 "The position from the left side or top"）：
+            // 垂直轴 pos = 块顶距父【顶】的向下偏移——anchor 被钉在 Vector2.up（父左上角），
+            // 内部写 anchoredPosition.y = -pos - size*(1-pivot.y)，pivot 项就是实测 anchoredY 偏差的来源。
+            // m_Slots.y = -(行顶偏移 + h)，翻回顶部偏移：pos = padding.top + 行顶偏移 = padding.top - m_Slots.y - h。
+            // 核对（padding.top 10）：首行块 10-(-40)-40=10 → 块顶距父顶 10；换行块 10-(-90)-40=60 → 第二行 ✓
+            for (int i = 0; i < rectChildren.Count; i++)
+                SetChildAlongAxis(rectChildren[i], 1,
+                    padding.top - m_Slots[i].y - m_Slots[i].height, m_Slots[i].height);
+        }
+        /// <summary>
+        /// 装箱逻辑：
+        /// 先清空槽位信息
+        /// 获取每个子元素的槽位信息（行列坐标、宽度和高度）
+        /// 按行装箱，更新 m_Slots 和 m_TotalHeight
+        /// （只存数据，不处理实际布局，实际布局由 SetLayoutHorizontal/SetLayoutVertical 处理）
+        /// </summary>
+        void Packrows()
+        {
+            m_Slots.Clear();
+            m_TotalHeight = 0f;
+            // 可用宽度 = 总宽度 - 左右 padding
+            float avail = rectTransform.rect.width - padding.horizontal;
+            float x = 0f, y = 0f, rowHeight = 0f;
+            for(int i = 0; i < rectChildren.Count; i++)
+            {
+                float w = LayoutUtility.GetPreferredWidth(rectChildren[i]);
+                float h = LayoutUtility.GetPreferredHeight(rectChildren[i]);
+                // x > 0 才换行：首元素再宽也硬放（防"永远放不进任何行"死循环）
+                if (x > 0f && x + w > avail)
+                {
+                    x = 0f;
+                    y -= rowHeight + m_Spacing;         // UGUI 局部系 y 向上为正：下一行 = y 减
+                    rowHeight = 0f;
+                }
+                m_Slots.Add(new Rect(x, y - h, w, h));  // 槽位顶边贴行顶：y-h 为底
+                x += w + m_Spacing;
+                rowHeight = Mathf.Max(rowHeight, h);
+            }
+            if (rectChildren.Count > 0)
+                m_TotalHeight = -y + rowHeight + padding.vertical;   // y 是负数往下长，总高取反
+        }
+    }   
 }
