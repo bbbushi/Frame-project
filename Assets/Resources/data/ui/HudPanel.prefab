@@ -89,8 +89,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b36648a445a0f4bbc97f6b24df8e2092, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelId: 
+  panelId: HUDPanel
   layer: 20
+  modal: 1
+  pause: 0
   fill: {fileID: 3173656495046818607}
   hpText: {fileID: 0}
 --- !u!1 &3648246933904288531

@@ -28,10 +28,19 @@ public class InputManager : IManager, IUpdatable
     private readonly Dictionary<PlayerAction, bool> _released = new();
 
     // ── 移动方向（外部直接读取属性） ──
-    public float MoveInput         { get; private set; }
+    private float moveInput;
+    public float MoveInput => IsInputEnabled ? moveInput : 0f; 
 
     // ── 全局输入开关 ──
     public bool IsInputEnabled { get; set; } = true;
+
+    //导航通道（独立字段，不进 PlayerAction——那是玩家战斗动作的语义域）：
+    private bool uiCancelPressed;
+    /// <summary>
+    /// UI 取消键（Esc）。⚠ 故意不走 IsInputEnabled：Exclusive 面板开着时恰恰只有它能用（§3.3）
+    /// </summary>
+    public bool IsUICancelPressed => uiCancelPressed;
+    
 
     // ═══════════════════════════════════════════════════════
     //  公开查询
@@ -50,7 +59,7 @@ public class InputManager : IManager, IUpdatable
             Debug.LogWarning("[InputManager] 未在 Resources/ 中找到 PlayerInputData.asset，使用硬编码默认键位。");
 
         ResetFrameStates();
-        MoveInput = 0f;
+        moveInput = 0f;
         yield break;
     }
 
@@ -59,6 +68,7 @@ public class InputManager : IManager, IUpdatable
     public void OnUpdate(float deltaTime)
     {
         RefreshFrameState();
+        
     }
 
     // ═══════════════════════════════════════════════════════
@@ -68,11 +78,13 @@ public class InputManager : IManager, IUpdatable
     {
         
         ResetFrameStates();
-        if (DialogueManager.IsAnyPlaying) 
+        if (DialogueManager.IsAnyPlaying)
         {
             UpdateMoveInput();
-            return;
+            uiCancelPressed = false;    // 对话期间 UI 不得持有 Esc——不清的话，进对话那帧恰好按过 Esc，
+            return;                     // true 会卡住整个对话期，UIManager 每帧 HandleCancel 把栈退光
         }
+        uiCancelPressed = Input.GetKeyDown(KeyCode.Escape);
         // 读取硬件：优先使用 ScriptableObject，否则使用硬编码默认值
         if (_inputData != null && _inputData.bindings != null && _inputData.bindings.Count > 0)
         {
@@ -123,7 +135,7 @@ public class InputManager : IManager, IUpdatable
     {
         float left  = IsHeld(PlayerAction.MoveLeft)  ? -1f : 0f;
         float right = IsHeld(PlayerAction.MoveRight) ?  1f : 0f;
-        MoveInput = left + right;
+        moveInput = left + right;
     }
 
     private static bool GetValue(Dictionary<PlayerAction, bool> map, PlayerAction key)

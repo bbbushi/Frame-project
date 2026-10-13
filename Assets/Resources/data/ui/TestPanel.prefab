@@ -121,7 +121,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1604816610985966143}
+      - m_Target: {fileID: 1012654823064743713}
         m_TargetAssemblyTypeName: Managers.UI.TestPanel, Assembly-CSharp
         m_MethodName: Close
         m_Mode: 1
@@ -278,7 +278,7 @@ GameObject:
   - component: {fileID: 7904397358101405833}
   - component: {fileID: 4921037479291275905}
   - component: {fileID: 4772052929141957629}
-  - component: {fileID: 1604816610985966143}
+  - component: {fileID: 1012654823064743713}
   m_Layer: 5
   m_Name: TestPanel
   m_TagString: Untagged
@@ -345,7 +345,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &1604816610985966143
+--- !u!114 &1012654823064743713
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -357,8 +357,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8994f635ee60648b8bc1354f4fd2f918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelId: 
+  panelId: TestPanel
   layer: 20
+  modal: 1
+  pause: 0
 --- !u!1 &8405492541018737164
 GameObject:
   m_ObjectHideFlags: 0

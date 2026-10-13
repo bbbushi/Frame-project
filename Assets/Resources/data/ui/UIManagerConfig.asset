@@ -17,8 +17,14 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   panels:
   - panelId: TestPanel
-    prefab: {fileID: 1604816610985966143, guid: 1c0a87281889d4dcb8c0bdda97029489, type: 3}
+    prefab: {fileID: 1012654823064743713, guid: 1c0a87281889d4dcb8c0bdda97029489, type: 3}
     autoShow: 0
-  - panelId: HUD
+  - panelId: HUDPanel
     prefab: {fileID: 917242860189190653, guid: da5c245067f7942c4a09ed6979e39983, type: 3}
     autoShow: 1
+  - panelId: PausePanel
+    prefab: {fileID: -5467774650843063625, guid: e2dbdf945b780476d85a2397efc5a48c, type: 3}
+    autoShow: 0
+  - panelId: LoadingPanel
+    prefab: {fileID: 3317616637862532077, guid: 43104b455b88043a6bdb6ca59076be7f, type: 3}
+    autoShow: 0

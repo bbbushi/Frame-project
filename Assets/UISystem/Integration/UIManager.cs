@@ -5,29 +5,40 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
-
+using InputComponent;
 namespace Managers.UI
 {
     /// <summary>
     /// MOMS UI 宿主：构建 UIRoot 三层根 Canvas、按注册表实例化/缓存面板、保证唯一 EventSystem。
     /// 面板缓存只增不减（Unload/池化留二期）。
     /// </summary>
-    public class UIManager : IManager
+    public class UIManager : IManager, IUpdatable
     {
         
         public string Name => "UIManager";
-        private static readonly List<Type> _dependencies = new();   // 无依赖 → 拓扑第一批
+        private static readonly List<Type> _dependencies = new(){ typeof(InputManager) };
         public List<Type> Dependencies => _dependencies;
         private static UIManager Resolve => GameManager.Instance?.GetManager<UIManager>();
         private const string ConfigPath = "data/ui/UIManagerConfig";
         private const string RootName = "UIRoot";
-        // 显式列出要建的层（不遍历枚举——将来加 Overlay=200 预留层时不该自动建出空画布）
-        private static readonly UILayer[] BuildLayers = {UILayer.HUD, UILayer.Panel, UILayer.Guide };
+        // 显式列出要建的层（不遍历枚举——纯常量清单，缺哪层一眼可见）
+        private static readonly UILayer[] BuildLayers = {UILayer.HUD, UILayer.Panel, UILayer.Guide, UILayer.Overlay};
         private UIManagerConfig _config;
         private GameObject _root;
+        /// <summary>
+        /// 输入/暂停的唯一写入者：每次面板开合后全量重算（派生状态，§3.1）。
+        /// 冒烟测试不打桩也能断言：决策结果先落这两个只读属性，再写向真闸门
+        /// </summary>
+        public bool DesiredInputEnabled { get; private set; } = true;
+        public float DesiredPauseScale { get; private set; } = 1f;
+
         private readonly Dictionary<UILayer, Transform> _layerRoots = new();
         private readonly Dictionary<string, UIPanel> _cache = new(); // 实例缓存，含已关闭面板
         private readonly Dictionary<string, UIManagerConfig.PanelEntry> _registry = new(); // 注册表，含已关闭面板
+        /// <summary>
+        /// 导航栈：只收 modal≠None 的面板实例，用于管理面板的打开顺序和关闭逻辑。
+        /// </summary>
+        private readonly List<UIPanel> _stack = new(); // 导航栈：只收 modal≠None
 
 
         //================================ IManager 接口 =================================
@@ -53,12 +64,14 @@ namespace Managers.UI
                 _config = ScriptableObject.CreateInstance<UIManagerConfig>(); //兜底空配置，避免后续空引用
             }
             _root = new GameObject(RootName);
-            if(_config.dontDestroyOnLoad) UnityEngine.Object.DontDestroyOnLoad(_root);
+            // DDOL 是 Play 概念——编辑器上下文（冒烟/编辑器工具）调用会抛 InvalidOperationException，非 Play 跳过
+            if(_config.dontDestroyOnLoad && Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(_root);
             foreach(var layer in BuildLayers)
             {
                 BuildLayerCanvas(layer, (int)layer);
             }
             EnsureEventSystem();
+            EnsureFadeVeil();
             RebuildRegistry();
             // 常驻面板：注册表里勾了 autoShow 的直接 Show（HUD 等）
             //（注册表条目必带 prefab——RebuildRegistry ① 已过滤空条目，这里不必再判）
@@ -83,8 +96,23 @@ namespace Managers.UI
             _layerRoots.Clear();
             _cache.Clear();
             _registry.Clear();
+            _stack.Clear();
             _config = null;
         }
+
+
+        //================================ IUpdatable =================================
+        public void OnUpdate(float dt)// MOMS 每帧回调
+        {
+            var input = GameManager.Get<InputManager>();
+            if (input == null || !input.IsUICancelPressed) return;
+            // 过渡期 UI 不持有 Esc（五期 §五.5.7）：LoadingPanel 在栈里，Esc 会把它退掉=过渡中断。
+            // 放 OnUpdate 不放 HandleCancel——后者是纯退栈语义（对齐四期决策 9 的分层理由）
+            if (GameFlowSystem.GameFlowManager.Current == GameFlowSystem.FlowState.Loading) return;
+            HandleCancel();
+        }
+
+        
 
         //================================ 静态接口 =================================
 
@@ -130,6 +158,8 @@ namespace Managers.UI
             {
                 if(panel != null && panel.IsOpen) panel.Hide();
             }
+            m._stack.Clear();       // 全关=栈空；上面直接 Hide 不逐个出栈，末尾统一清
+            m.ApplyStackState();    // 派生重算：输入/暂停自然全恢复（漏了这步=面板全关但世界还停着、输入还锁着）
         }
 
 
@@ -198,6 +228,28 @@ namespace Managers.UI
 
 
         /// <summary>
+        /// 全屏过渡黑幕（UIFade 的画布，五期方案 §五.5.5）：挂在 Overlay 层，常驻随 UIRoot 跨场景。
+        /// ⚠ Image.raycastTarget 必须 false——alpha=0 的 Image 只要 raycastTarget=true 就会挡住全屏点击
+        ///（CanvasGroup 不拦射线，Image 才拦），UGUI 高频隐形坑。
+        /// </summary>
+        private void EnsureFadeVeil()
+        {
+            var go = new GameObject("FadeVeil", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            go.transform.SetParent(_layerRoots[UILayer.Overlay], false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;          // 四边 stretch 拉满层画布
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            var img = go.GetComponent<Image>();
+            img.color = Color.black;
+            img.raycastTarget = false;
+            var group = go.GetComponent<CanvasGroup>();
+            group.alpha = 0f;                    // 全透明起始，UIFade 渐变驱动
+            group.blocksRaycasts = false;
+        }
+
+
+        /// <summary>
         /// 重建注册表：清空旧表，按 config 逐条检查并填入新表
         /// ① 条目本身无效：没拖 prefab 的行直接跳过
         /// ② id 回退：config 没填 → 用 prefab 组件的 PanelId
@@ -252,7 +304,8 @@ namespace Managers.UI
                 {
                     panel.Show();
                     panel.transform.SetAsLastSibling(); // 保证置顶
-                    return panel;
+                    RegisterOpen(panel);   // ⚠ 缓存命中分支同样要走收尾——面板只建一次，第二次开永远走这，
+                    return panel;          // 漏了压栈=二次打开不进栈（Exclusive 二次打开=假暂停）
                 }
             }
             // ② 注册表查 prefab（entry 可能是 default，LogError 不能解引用它）
@@ -281,12 +334,14 @@ namespace Managers.UI
             // ⑤ 入缓存并打开
             _cache[panelId] = panel; // 缓存实例
             panel.Show();
+            RegisterOpen(panel);
             return panel;
         }
 
 
         /// <summary>
-        /// 关闭面板：已开才 Hide（已关幂等静默）；未缓存/悬空 → LogWarning（多为拼写错）
+        /// 关闭面板：已开才 Hide（已关幂等静默）；
+        /// 未缓存/悬空 → LogWarning（多为拼写错）;
         /// </summary>
         private void HidePanel(string panelId)
         {
@@ -295,7 +350,59 @@ namespace Managers.UI
                 Debug.LogWarning($"[UI] HidePanel：未找到面板「{panelId}」");
                 return;
             }
-            if(panel.IsOpen) panel.Hide();
+            if(panel.IsOpen) HidePanelDirect(panel);
+        }
+        /// <summary>
+        /// 关闭实例的统一出口（HidePanel / HandleCancel 共用）——不走 panelId 查缓存：
+        /// 栈里存的是实例，缓存键是注册表 id，两者可能不相等（CloseAllPanels 注释同款坑），按 id 反查会漏
+        /// </summary>
+        private void HidePanelDirect(UIPanel panel)
+        {
+            if(!panel.IsOpen) return;   // 已关幂等静默
+            _stack.RemoveAll(p => p == panel);
+            panel.Hide();
+            ApplyStackState();
+        }
+        /// <summary>
+        /// Show 的收尾（缓存命中/首次实例化两个出口共用）：交互面板压栈顶（重复开=置顶语义）+ 全量重算输入/暂停
+        /// </summary>
+        private void RegisterOpen(UIPanel panel)
+        {
+            if (panel.Modal != PanelModal.None) { _stack.RemoveAll(p => p == panel); _stack.Add(panel); }
+            ApplyStackState();
+        }
+        /// <summary>
+        /// Esc 语义 = 退栈顶（不是关选中项）；
+        /// 栈空无事发生
+        /// </summary>
+        public static void HandleCancel()
+        {
+            var m = Resolve; if (m == null) return;
+            if (m._stack.Count == 0) return;
+            m.HidePanelDirect(m._stack[^1]);   // 直关实例：栈顶的 PanelId 未必等于缓存键
+        }
+        /// <summary>
+        /// 根据当前栈顶的 Exclusive 面板状态，更新全局输入和暂停状态。
+        /// </summary>
+        private void ApplyStackState()
+        {
+            // 从栈顶往下找第一个 Exclusive（栈顶优先；
+            // Popup 叠在 Exclusive 上时以最顶 Exclusive 为准，
+            // 弹窗关闭后自动回到暂停状态——派生式的价值就在这）
+            bool inputEnabled = true;
+            float pauseScale = 1f;
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                if (_stack[i].Modal != PanelModal.Exclusive) continue;
+                inputEnabled = false;
+                pauseScale = _stack[i].Pause == PanelPause.World ? 0f : 1f;
+                break;
+            }
+            DesiredInputEnabled = inputEnabled;   // 先落只读镜像（冒烟断言点）
+            DesiredPauseScale  = pauseScale;
+            var input = GameManager.Get<InputManager>();
+            if (input != null) input.IsInputEnabled = inputEnabled;
+            TimeManager.PauseScale = pauseScale;
         }
 
     }

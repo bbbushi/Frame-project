@@ -24,6 +24,12 @@ public static class UIDebugMenu
         if (EnsurePlaying()) UIManager.Hide("TestPanel");
     }
 
+    [MenuItem("UI/打开面板/PausePanel")]   // 四期手测链用：关闭走 Esc（退栈顶正是被测语义），不另配菜单
+    public static void ShowPausePanel()
+    {
+        if (EnsurePlaying()) UIManager.Show("PausePanel");
+    }
+
     [MenuItem("UI/关闭全部面板")]
     public static void CloseAll()
     {

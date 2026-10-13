@@ -129,7 +129,9 @@ namespace State_Player
         private IEnumerator HandleGameOver()
         {
             yield return new WaitForSeconds(deathAnimationDuration);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // 五期接线：裸 LoadScene(buildIndex) 在 Build 列表空/错位时静默失败——走流程过渡管线
+            //（LoadingPanel 锁输入停世界 → 异步加载 → SpawnPoint 落点校准 → 自动恢复）
+            GameFlowSystem.GameFlowManager.ReloadCurrent();
         }
     }
 }
