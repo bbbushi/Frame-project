@@ -7,7 +7,7 @@ using System.Collections;
 /// <summary>
 /// 游戏流程状态: 主菜单、加载、进行中、游戏结束
 /// </summary>
-namespace GameFlowSystem
+namespace Managers.GameFlow   // ⚠ MOMS 反射扫描白名单只认 Managers/Managers.*——命名空间必须在白名单内才会被注册（写错=永不初始化且无报错）
 {
     public enum FlowState { MainMenu, Loading, Playing, GameOver }
     public class GameFlowManager : IManager

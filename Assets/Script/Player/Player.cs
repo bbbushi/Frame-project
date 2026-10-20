@@ -84,6 +84,9 @@ namespace PlayerSystem
 
         protected void OnDestroy()
         {
+            // 兜底：玩家销毁（死亡重载/场景转场）时恢复全局速度。
+            // GameManager 是 DontDestroyOnLoad，SlowScale 跨场景残留，不恢复会永久卡在慢动作。
+            ModuleControlComponent?.BulletTime.CancelBulletTime();
             TimeManager.OnLocalTimeScaleChanged -= OnLocalTimeScaleChanged;
         }
 

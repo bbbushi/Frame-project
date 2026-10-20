@@ -10,6 +10,7 @@ namespace InputComponent
         Jump,
         Thrust,        // 突刺（整合了原 Dash + 短距位移）
         Attack,        // 普通攻击（鼠标左键）
-        // 子弹时间（BulletTime/Execution/Mark）已随旧实现移除，重写时在此补回
+        BulletTime,    // 子弹时间开关（鼠标右键）
+        // 处决链（Execution/Mark）待处决链迭代时补回
     }
 }

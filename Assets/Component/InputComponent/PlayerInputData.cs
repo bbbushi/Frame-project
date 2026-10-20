@@ -36,6 +36,7 @@ namespace Config{
             new() { action = PlayerAction.Jump,       key = KeyCode.Space,      trigger = InputTriggerType.Down },
             new() { action = PlayerAction.Thrust,     key = KeyCode.S,          trigger = InputTriggerType.Down },
             new() { action = PlayerAction.Attack,     key = KeyCode.Mouse0,     trigger = InputTriggerType.Down },
+            new() { action = PlayerAction.BulletTime, key = KeyCode.Mouse1,    trigger = InputTriggerType.Down },
         };
     }
 }

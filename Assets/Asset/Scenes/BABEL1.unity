@@ -1546,6 +1546,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Manager
       objectReference: {fileID: 0}
+    - target: {fileID: 1614875380284007061, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: shakeOffset.x
+      value: 1.79
+      objectReference: {fileID: 0}
+    - target: {fileID: 1614875380284007061, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: shakeOffset.y
+      value: 0.31
+      objectReference: {fileID: 0}
     - target: {fileID: 3021986070022882645, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.1810224
@@ -1586,6 +1594,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnWall.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnWall.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: 5f503eb70b100d44c894be31594cf3f5, type: 3}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnWall.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: 915c3000e816a9346af4226baa393f53, type: 3}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnBackground.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnBackground.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: da0636f37dbf5204c9aa105e6c26e18e, type: 3}
+    - target: {fileID: 5124871960737433178, guid: c6755e1598195f84fbbdb43829248d51, type: 3}
+      propertyPath: bloodsOnBackground.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: 471f0b7549ef9e441b2e87780396292f, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

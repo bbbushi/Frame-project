@@ -28,3 +28,6 @@ MonoBehaviour:
   - action: 4
     key: 323
     trigger: 0
+  - action: 5
+    key: 324
+    trigger: 0

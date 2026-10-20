@@ -19,6 +19,8 @@ namespace Config
         public float attackRecovery = 0.2f;        // 攻击收招后的额外硬直
         public float deathAnimationDuration = 1.5f; // 死亡到场景重载的延迟
 
-        // 子弹时间参数（bulletTimeScale/aimArc/maxMarkTargets/markRange/chainDelay）已随旧实现移除，重写时在此补回
+        [Header("子弹时间")]
+        public float bulletTimeScale = 0.2f;   // 全局慢动作倍率（SlowScale 因子）
+        // 处决链参数（aimArcAngle/maxMarkTargets/markRange/chainDelay）待处决链迭代时补回
     }
 }
