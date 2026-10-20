@@ -108,7 +108,7 @@ namespace Managers.UI
             if (input == null || !input.IsUICancelPressed) return;
             // 过渡期 UI 不持有 Esc（五期 §五.5.7）：LoadingPanel 在栈里，Esc 会把它退掉=过渡中断。
             // 放 OnUpdate 不放 HandleCancel——后者是纯退栈语义（对齐四期决策 9 的分层理由）
-            if (GameFlowSystem.GameFlowManager.Current == GameFlowSystem.FlowState.Loading) return;
+            if (Managers.GameFlow.GameFlowManager.Current == Managers.GameFlow.FlowState.Loading) return;
             HandleCancel();
         }
 

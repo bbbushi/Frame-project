@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-namespace GameFlowSystem
+namespace Managers.GameFlow
 {
     [CreateAssetMenu(menuName = "MOMS/SceneRegistry", fileName = "SceneRegistry")]
     public class SceneRegistry : ScriptableObject

@@ -9,7 +9,8 @@ namespace Components
         [Header("移动参数")]
         [SerializeField] protected float moveSpeed;
         // 掉头刹车率（m/s²）：反向输入时速度渐变过零的减速率；0 = 瞬时掉头
-        [SerializeField] protected float deceleration = 40f;
+        [SerializeField] protected float deceleration = 30;
+        // [SerializeField] protected float acceleration = 50;
 
         public float Velocity {get; set;} = 1f;
         protected Displacement currentDisplacement;
@@ -45,6 +46,10 @@ namespace Components
             // 翻转时机由上层按速度归零触发（PlayerLocomotion.SetMoveInput）
             if (direction != 0f && direction * vx < 0f && deceleration > 0f)
                 vx = Mathf.MoveTowards(vx, target, deceleration * FrameInterval);
+            // else if(direction != 0f && acceleration > 0f && Mathf.Abs(target) > Mathf.Abs(vx))
+            // {
+            //     vx = Mathf.MoveTowards(vx, target, acceleration * FrameInterval);
+            // }
             else
                 vx = target;
             Owner.rb.velocity = new Vector2(vx, Owner.rb.velocity.y);

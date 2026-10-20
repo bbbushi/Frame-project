@@ -44,7 +44,7 @@ namespace Components
             //    GroundMove 是 Idle1/run 的 xvelocity 混合树，Jumping 是 yvelocity 混合树；
             //    None 是动作层持锁期间的让位锚点，不碰姿态不应用输入）──
             MotionMachine.Register(MotionStateId.None,   new PlayerMotionNoneState(Owner));
-            MotionMachine.Register(MotionStateId.Ground, new PlayerGroundState(Owner, "GroundMove"));
+            MotionMachine.Register(MotionStateId.Ground, new PlayerGroundState(Owner, "GroundMove.Idle"));
             MotionMachine.Register(MotionStateId.Air,     new PlayerAirState(Owner, "Jumping"));
 
             // ── 动作层状态（null = 暂无对应剪辑，静默跳过 CrossFade；连击时 Attack 可按 ComboCount 选名）──
@@ -86,7 +86,7 @@ namespace Components
             if (Owner.anim != null)
             {
                 Owner.anim.SetFloat("yvelocity", Owner.rb.velocity.y);
-                Owner.anim.SetFloat("xvelocity", Owner.rb.velocity.x);
+                Owner.anim.SetFloat("xvelocity", Mathf.Abs(Owner.rb.velocity.x));
             }
 
             // 先移动后动作：动作完成当帧即可恢复移动

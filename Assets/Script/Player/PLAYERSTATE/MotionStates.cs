@@ -57,7 +57,10 @@ namespace State_Player
             // 真实离地 = 不在地面 且 垂直速度非零：不查 IsGrounded 时，落地残余速度会误判离地 →
             // 立即又判落地 → Landing trigger 双发 → 落地涟漪播两遍
             if (!player.locomotionComponent.IsGrounded && Mathf.Abs(player.rb.velocity.y) > 0.01f)
+            {
                 player.AnimatorComponent.MotionMachine.ChangeState(MotionStateId.Air);
+            }
+                
         }
     }
 

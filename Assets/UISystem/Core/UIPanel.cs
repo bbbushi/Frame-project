@@ -23,7 +23,7 @@ namespace UI
     {
         [Tooltip("面板唯一 id。留空则用 gameObject.name（Instantiate 会带 (Clone)，UIManager 已做净化）")]
         [SerializeField] private string panelId;
-        [Tooltip("本面板挂在哪一层")]
+        [Tooltip("本面板挂在哪一层: HUD/Panel/Guide/Overlay。HUD=玩家界面，Panel=交互面板，Guide=引导层，Overlay=过渡层")]
         [SerializeField] private UILayer layer = UILayer.Panel;
         // UIPanel 类内新增字段（对齐 layer 的"事实源跟 prefab 走"哲学，不入 PanelEntry）：
         [Tooltip("None=装饰/HUD不进导航栈；Popup=交互面板；Exclusive=独占(夺玩家输入)")]
