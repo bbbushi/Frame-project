@@ -4794,7 +4794,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 2.07
+  orthographic size: 4.3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -4819,7 +4819,7 @@ Transform:
   m_GameObject: {fileID: 1372757925}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.98, y: -2.952, z: -101.64}
+  m_LocalPosition: {x: -3.98, y: -1.4519999, z: -101.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6602,6 +6602,46 @@ PrefabInstance:
     - target: {fileID: 1312880559986096966, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: deadzoneX
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: deadzoneY
+      value: 0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: forwardRange
+      value: 1.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: localOffset.x
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: localOffset.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 4411932138189491169, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: forwardRangeCurrent
+      value: 0.39
+      objectReference: {fileID: 0}
+    - target: {fileID: 4775886380718831762, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: m_Lens.Dutch
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4775886380718831762, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: m_Lens.FarClipPlane
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 4775886380718831762, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: m_Lens.OrthographicSize
+      value: 4.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5650170377764389500, guid: 1f826eb05b5091947b9b5507e8bf28a6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
