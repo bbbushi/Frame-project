@@ -31,3 +31,6 @@ MonoBehaviour:
   - action: 5
     key: 324
     trigger: 0
+  - action: 6
+    key: 101
+    trigger: 0

@@ -48,6 +48,7 @@ namespace Modules
         /// </summary>
         public void ThrustCore()
         {
+            Debug.Assert(Players != null, "PlayerThrust: Players is null");
             if (IsThrusting) return;
             IsThrusting = true;
             Players.locomotionComponent.ForceMove(thrustForce);

@@ -21,6 +21,7 @@ namespace Config
 
         [Header("子弹时间")]
         public float bulletTimeScale = 0.2f;   // 全局慢动作倍率（SlowScale 因子）
-        // 处决链参数（aimArcAngle/maxMarkTargets/markRange/chainDelay）待处决链迭代时补回
+        public int maxMarkTargets = 3;         // 子弹时间最大标记数
+        public float chainDelay = 0.15f;       // 处决链连杀间隔
     }
 }

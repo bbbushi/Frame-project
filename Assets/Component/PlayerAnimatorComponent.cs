@@ -52,12 +52,13 @@ namespace Components
             ActionMachine.Register(ActionStateId.Attack,    new PlayerAttackState(Owner, "attack"));
             ActionMachine.Register(ActionStateId.Thrust,    new PlayerThrustState(Owner, "Dash"));
             ActionMachine.Register(ActionStateId.Death,     new PlayerDeathState(Owner, null));
+            ActionMachine.Register(ActionStateId.Execution, new PlayerExecutionState(Owner, "Dash"));
 
             // ── 动作层守卫规则（结构性声明；未声明拒绝的一律允许；移动层物理驱动、不设禁令）──
             // 死亡是终态（任意状态 → Death 仍默认允许，即死亡可打断一切）
             ActionMachine.ForbidAllFrom(ActionStateId.Death);
             // 动作互斥组：组内互转拒绝，进出均经 None（None→动作进入、动作→None 完成）
-            ActionMachine.ForbidAllBetween(ActionStateId.Attack, ActionStateId.Thrust);
+            ActionMachine.ForbidAllBetween(ActionStateId.Attack, ActionStateId.Thrust, ActionStateId.Execution);
 
             // if (enableTransitionLog)
             // {

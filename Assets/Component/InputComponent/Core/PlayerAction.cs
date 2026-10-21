@@ -11,6 +11,6 @@ namespace InputComponent
         Thrust,        // 突刺（整合了原 Dash + 短距位移）
         Attack,        // 普通攻击（鼠标左键）
         BulletTime,    // 子弹时间开关（鼠标右键）
-        // 处决链（Execution/Mark）待处决链迭代时补回
+        Execution,     // 处决链触发（E 键，子弹时间中有标记时生效）
     }
 }

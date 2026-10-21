@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "unity-mcp": {
+        "command": "/Users/huziyao/.local/bin/uv",
+        "args": [
+          "run",
+          "--directory",
+          "/Volumes/Tool/unity-mcp-10.2.0/Server",
+          "mcp-for-unity"
+        ]
+      }
+    }
+  }
+}

@@ -148,25 +148,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Combat:
-    attackDamage: 10
     comboWindow: 0.5
   Thrust:
     thrustForce: {fileID: 0}
     thrustCooldown: 0.5
     thrustDamage: 15
-  BulletTime:
-    bulletTimeScale: 0.2
-    aimArcAngle: 120
-    maxMarks: 3
-    markRange: 10
-    chainDelay: 0.15
-    enemyLayer:
-      serializedVersion: 2
-      m_Bits: 0
   Locomotion:
     moveSpeed: 5
     jumpForce: 10
     maxJumps: 2
+  BulletTime:
+    bulletTimeScale: 0.2
+    pierceEffectMaterial: {fileID: 0}
 --- !u!1 &2166394279342128498
 GameObject:
   m_ObjectHideFlags: 0
@@ -753,7 +746,7 @@ Transform:
   m_GameObject: {fileID: 6353099802234704829}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -100}
+  m_LocalPosition: {x: 0, y: 2.83, z: -100}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -782,7 +775,7 @@ MonoBehaviour:
   m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 60
-    OrthographicSize: 2.07
+    OrthographicSize: 4.63
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -978,8 +971,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e33b0ee19a4607148ad21e5c64f85880, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 100
-  currentHP: 0
 --- !u!1 &8967489408929301834
 GameObject:
   m_ObjectHideFlags: 0

@@ -47,8 +47,12 @@ MonoBehaviour:
   bloodOnBackground: {fileID: 1170039278035515541, guid: 1de03a9943c71c7409cf7d1be98c42ee, type: 3}
   bloodOnWall: {fileID: 1170039278035515541, guid: 927b5c913e4b83747a8052515b44a558, type: 3}
   bloodParticle: {fileID: 1170039278035515541, guid: ed80ee2d3489c10439e89b69edd2bda0, type: 3}
-  bloodsOnBackground: []
-  bloodsOnWall: []
+  bloodsOnBackground:
+  - {fileID: 21300000, guid: da0636f37dbf5204c9aa105e6c26e18e, type: 3}
+  - {fileID: 21300000, guid: 471f0b7549ef9e441b2e87780396292f, type: 3}
+  bloodsOnWall:
+  - {fileID: 21300000, guid: 5f503eb70b100d44c894be31594cf3f5, type: 3}
+  - {fileID: 21300000, guid: 915c3000e816a9346af4226baa393f53, type: 3}
 --- !u!1 &819838315788283786
 GameObject:
   m_ObjectHideFlags: 0
@@ -81,6 +85,7 @@ Transform:
   m_Children:
   - {fileID: 1816021973249382154}
   - {fileID: 7316031705118365634}
+  - {fileID: 2200976536180981877}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5025663989679846663
@@ -139,4 +144,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb13b29cf739b8141857afb9dea59c00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shakeOffset: {x: 0, y: 0}
+  shakeOffset: {x: 1.79, y: 0.31}
+--- !u!1 &7836445943221838451
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2200976536180981877}
+  - component: {fileID: 9155893371270490985}
+  m_Layer: 0
+  m_Name: Shadow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2200976536180981877
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836445943221838451}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3021986070022882645}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9155893371270490985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836445943221838451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ce916c415254e1bba5859bb3913096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _shadowPrefab: {fileID: 7590934543458176990, guid: e413d712013f9d64eb205f9218955eec, type: 3}
+  _shadowCount: 10
+  _shadowMaxSize: 50

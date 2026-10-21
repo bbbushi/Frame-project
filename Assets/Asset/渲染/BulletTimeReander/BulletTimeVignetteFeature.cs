@@ -23,6 +23,13 @@ namespace Effects
             [Range(0f, 1f)] public float softness = 0.45f;     // 亮区外渐变带宽
             [Range(0f, 1f)] public float maxIntensity = 0.65f; // 完全进入子弹时间时的压暗强度
             public Color dimColor = new Color(0.30f, 0.32f, 0.45f); // 暗区色调倍率（偏蓝）
+
+            [Header("瞄准扇形（全局变暗之上，扇形内浅暗稍亮）")]
+            [Range(5f, 180f)] public float arcHalfAngleDeg = 60f;   // 扇形半角（全角 = 2 倍，旧实现全角 120）
+            public float arcRadius = 10f;                           // 扇形半径（世界单位，对齐旧 markRange）
+            [Range(0f, 0.3f)] public float arcEdgeSoftness = 0.06f; // 弧缘柔边（视口单位）
+            [Range(0f, 1f)] public float arcReveal = 0.4f;          // 扇形内暗角减弱比例（0.4 = 扇形内保留六成暗角，浅暗）
+            [Range(1f, 1.5f)] public float arcBoost = 1.05f;        // 扇形内轻微提亮（1 = 只靠暗角对比）
         }
 
         public Settings settings = new Settings();
@@ -46,6 +53,8 @@ namespace Effects
             private static readonly int IntensityId = Shader.PropertyToID("_BulletTimeIntensity");
             private static readonly int CenterRadiusId = Shader.PropertyToID("_BulletTimeCenterRadius");
             private static readonly int DimColorId = Shader.PropertyToID("_BulletTimeDimColor");
+            private static readonly int ArcId = Shader.PropertyToID("_BulletTimeArc");
+            private static readonly int ArcFxId = Shader.PropertyToID("_BulletTimeArcFx");
 
             private readonly Settings _s;
             private Material _mat;
@@ -90,6 +99,25 @@ namespace Effects
                 _mat.SetFloat(IntensityId, intensity);
                 _mat.SetVector(CenterRadiusId, centerRadius);
                 _mat.SetColor(DimColorId, _s.dimColor);
+
+                // ── 瞄准扇形（随子弹时间同步淡入淡出：arcStrength = 暗角强度归一）──
+                float arcStrength = intensity / Mathf.Max(_s.maxIntensity, 1e-4f);
+                // 瞄准方向：鼠标的世界位置相对玩家（正交相机 xy 与 z 无关，同 BloodExample 惯例）
+                Vector2 aimDir = Vector2.right;
+                if (_player != null)
+                {
+                    Vector3 mouseWorld = camera.ScreenToWorldPoint(Input.mousePosition);
+                    Vector2 toMouse = (Vector2)mouseWorld - (Vector2)_player.transform.position;
+                    if (toMouse.sqrMagnitude > 1e-6f) aimDir = toMouse.normalized; // 鼠标贴脸时保持右向，避免抖动
+                }
+                // 半径世界单位 → 视口比例（正交相机 y 半高 = orthographicSize）
+                float radiusVp = _s.arcRadius / Mathf.Max(2f * camera.orthographicSize, 0.01f);
+
+                _mat.SetVector(ArcId, new Vector4(
+                    Mathf.Cos(_s.arcHalfAngleDeg * Mathf.Deg2Rad), radiusVp,
+                    _s.arcEdgeSoftness, _s.arcReveal * arcStrength));
+                _mat.SetVector(ArcFxId, new Vector4(aimDir.x, aimDir.y,
+                    Mathf.Lerp(1f, _s.arcBoost, arcStrength), arcStrength));
 
                 CommandBuffer cmd = CommandBufferPool.Get("BulletTimeVignette");
                 // self-blit：URP 14 在 BeforePostProcessing 事件下的官方示例写法

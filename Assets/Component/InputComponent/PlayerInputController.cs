@@ -54,6 +54,7 @@ namespace InputComponent
             TryExecute(PlayerAction.Thrust, _input.IsPressed(PlayerAction.Thrust));
             TryExecute(PlayerAction.Attack, _input.IsPressed(PlayerAction.Attack));
             TryExecute(PlayerAction.BulletTime, _input.IsPressed(PlayerAction.BulletTime));
+            TryExecute(PlayerAction.Execution, _input.IsPressed(PlayerAction.Execution));
         }
 
         private void BuildCommands()
@@ -62,6 +63,7 @@ namespace InputComponent
             _commands[PlayerAction.Thrust] = new ThrustCommand();
             _commands[PlayerAction.Attack] = new AttackCommand();
             _commands[PlayerAction.BulletTime] = new BulletTimeCommand();
+            _commands[PlayerAction.Execution] = new ExecutionCommand();
         }
 
         private void TryExecute(PlayerAction action, bool triggered)
